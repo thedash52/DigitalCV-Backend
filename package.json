@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "^4.15.3",
     "mysql": "^2.14.1",
+    "mysql-migrations": "^1.0.3",
     "promise": "^8.0.1"
   }
 }

@@ -11,7 +11,7 @@ var pool = mysql.createPool({
     user: 'root',
     password: 'tHedAshc379sq',
     database: 'digitalcv',
-    debug: true
+    debug: false
 });
 
 function checkDatabase() {
@@ -21,11 +21,15 @@ function checkDatabase() {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM basic", function(err, result) {
+            conn.query("SHOW TABLES", function(err, result) {
                 conn.release();
 
                 if (!err) {
-                    return resolve(result);
+                    if (result.length > 1) {
+                        return resolve();
+                    } else {
+                        return reject("Database has not been setup. Please run migrations.");
+                    }
                 }
             });
 
@@ -49,6 +53,7 @@ app.get('/check-connection', function (req, res) {
 
     checkDatabase().then((result) => {
         testResults.database = true;
+        testResults.err = result;
         res.status(200).json(testResults);
     }).catch((err) => {
         testResults.err = err;
