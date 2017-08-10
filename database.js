@@ -43,11 +43,14 @@ exports.getBasic = function getBasic() {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM basic", function (err, result) {
+            conn.query("SELECT * FROM basic LIMIT 1", function (err, result) {
                 conn.release();
 
                 if (!err) {
-                    return resolve(result);
+                    return resolve({
+                        type: "basic",
+                        results: result[0]
+                    });
                 }
             });
 
@@ -91,14 +94,20 @@ exports.getPhone = function getPhone() {
 
                             if (count = result.length - 1) {
                                 conn.release();
-                                return resolve(phoneNumbers);
+                                return resolve({
+                                    type: "phone",
+                                    results: phoneNumbers
+                                });
                             } else {
                                 count++;
                             }
                         });
                     } else {
                         conn.release();
-                        return resolve(result);
+                        return resolve({
+                            type: "phone",
+                            results: result
+                        });
                     }
                 }
             });
@@ -143,14 +152,20 @@ exports.getSocial = function getSocial() {
 
                             if (count = result.length - 1) {
                                 conn.release();
-                                return resolve(socialData);
+                                return resolve({
+                                    type: "social",
+                                    results: socialData
+                                });
                             } else {
                                 count++;
                             }
                         });
                     } else {
                         conn.release();
-                        return resolve(result);
+                        return resolve({
+                            type: "social",
+                            results: result
+                        });
                     }
                 }
             });
@@ -210,7 +225,10 @@ exports.getTechnologies = function getTechnologies() {
                         values.push(value);
                     });
 
-                    return resolve(values);
+                    return resolve({
+                        type: "technology",
+                        results: values
+                    });
                 }
             });
 
@@ -254,14 +272,20 @@ exports.getRepositories = function getRepositories() {
 
                             if (count = result.length - 1) {
                                 conn.release();
-                                return resolve(repositoryData);
+                                return resolve({
+                                    type: "repositories",
+                                    result: repositoryData
+                                });
                             } else {
                                 count++;
                             }
                         });
                     } else {
                         conn.release();
-                        return resolve(result);
+                        return resolve({
+                            type: "repositories",
+                            result: result
+                        });
                     }
                 }
             });
@@ -321,7 +345,10 @@ exports.getEducation = function getEducation() {
                         values.push(data);
                     });
 
-                    return resolve(values);
+                    return resolve({
+                        type: "education",
+                        result: values
+                    });
                 }
             });
 
@@ -358,7 +385,10 @@ exports.getPapers = function getPapers() {
                         values.push(data);
                     });
 
-                    return resolve(values);
+                    return resolve({
+                        type: "paper",
+                        result: values
+                    });
                 }
             });
 
@@ -393,7 +423,10 @@ exports.getAchievements = function getAchievements() {
                         values.push(data);
                     });
 
-                    return resolve(values);
+                    return resolve({
+                        type: "achievement",
+                        results: values
+                    });
                 }
             });
 
@@ -427,7 +460,136 @@ exports.getInterests = function getInterests() {
                         values.push(data);
                     });
 
-                    return resolve(values);
+                    return resolve({
+                        type: "interest",
+                        results: values
+                    });
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyBasic = function verifyBasic(basicData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM basic", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(basic => {
+                        basicData.forEach(testData => {
+                            if (basic != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "basic",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "basic",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyPhone = function verifyPhone(phoneData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM phone", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(phone => {
+                        phoneData.forEach(testData => {
+                            if (phone != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "phone",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "phone",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifySocial = function verifySocial(socialData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM social", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(social => {
+                        socialData.forEach(testData => {
+                            if (social != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "social",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "social",
+                            result: true
+                        });
+                    }
                 }
             });
 

@@ -1,8 +1,15 @@
 var express = require('express');
 var Promise = require('promise');
 var database = require('./database');
+var cors = require('cors');
 
 var app = express();
+
+var corsOptions = {
+    origin: '*'
+}
+
+app.use(cors(corsOptions))
 const port = 3000;
 
 app.get('/', function (req, res) {
@@ -33,10 +40,24 @@ app.get('/get-basic', function (req, res) {
         database.getSocial()
     ]).then((results) => {
         var values = {
-            basic: results[0],
-            phone: results[1],
-            social: results[2]
+            basic: any,
+            phone: any,
+            social: any
         };
+
+        results.forEach(result => {
+            switch (result.type) {
+                case "basic":
+                    values.basic = result.results;
+                    break;
+                case "phone":
+                    values.phone = result.results;
+                    break;
+                case "social":
+                    values.social = result.results;
+                    break;
+            }
+        });
 
         res.status(200).json(values);
     }).catch((err) => {
@@ -70,9 +91,20 @@ app.get('/get-technology', function (req, res) {
         database.getRepositories()
     ]).then((results) => {
         var values = {
-            technologies: results[0],
-            repositories: results[1]
+            technologies: any,
+            repositories: any
         };
+
+        results.forEach(result => {
+            switch (result.type) {
+                case "technology":
+                    values.technologies = result.results;
+                    break;
+                case "repositories":
+                    values.repositories = result.results;
+                    break;
+            }
+        });
 
         res.status(200).json(values);
     }).catch((err) => {
@@ -86,9 +118,20 @@ app.get('/get-education', function (req, res) {
         database.getPapers()
     ]).then((results) => {
         var values = {
-            education: results[0],
-            papers: results[1]
+            education: any,
+            papers: any
         };
+
+        results.forEach(result => {
+            switch (result.type) {
+                case "education":
+                    values.education = result.results;
+                    break;
+                case "paper":
+                    values.papers = result.results;
+                    break;
+            }
+        });
 
         res.status(200).json(values);
     }).catch((err) => {
@@ -100,7 +143,7 @@ app.get('/get-experience', function (req, res) {
     database.getExperience().then((results) => {
         var values = [];
 
-        results.forEach(function(experience) {
+        results.forEach(function (experience) {
             var data = {
                 id: experience.id,
                 img: experience.image,
@@ -127,9 +170,54 @@ app.get('/get-other', function (req, res) {
         database.getInterests()
     ]).then((results) => {
         var values = {
-            achievement: results[0],
-            interest: results[1]
+            achievement: any,
+            interest: any
         };
+
+        results.forEach(result => {
+            switch (result.type) {
+                case "achievement":
+                    values.achievement = result.results;
+                    break;
+                case "interest":
+                    values.interest = result.results;
+                    break;
+            }
+        });
+
+        res.status(200).json(values);
+    }).catch((err) => {
+        res.status(200).json(err);
+    });
+});
+
+app.post('/verify-basic', function (req, res) {
+    let basic = req.body;
+
+    Promise.all([
+        database.verifyBasic(basic.basic),
+        database.verifyPhone(basic.phone),
+        database.verifySocial(basic.social)
+    ]).then((results) => {
+        var values = {
+            basic: any,
+            phone: any,
+            social: any
+        }
+
+        results.forEach(result => {
+            switch (result.type) {
+                case "basic":
+                    values.basic = result.result;
+                    break;
+                case "phone":
+                    values.phone = result.result;
+                    break;
+                case "social":
+                    values.social = result.result;
+                    break;
+            }
+        });
 
         res.status(200).json(values);
     }).catch((err) => {
