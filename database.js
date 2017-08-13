@@ -36,6 +36,28 @@ exports.checkDatabase = function checkDatabase() {
     });
 };
 
+exports.getType = function getType() {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM type", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    return resolve(result);
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
 exports.getBasic = function getBasic() {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
@@ -273,8 +295,8 @@ exports.getRepositories = function getRepositories() {
                             if (count = result.length - 1) {
                                 conn.release();
                                 return resolve({
-                                    type: "repositories",
-                                    result: repositoryData
+                                    type: "repository",
+                                    results: repositoryData
                                 });
                             } else {
                                 count++;
@@ -283,8 +305,8 @@ exports.getRepositories = function getRepositories() {
                     } else {
                         conn.release();
                         return resolve({
-                            type: "repositories",
-                            result: result
+                            type: "repository",
+                            results: result
                         });
                     }
                 }
@@ -347,7 +369,7 @@ exports.getEducation = function getEducation() {
 
                     return resolve({
                         type: "education",
-                        result: values
+                        results: values
                     });
                 }
             });
@@ -387,7 +409,7 @@ exports.getPapers = function getPapers() {
 
                     return resolve({
                         type: "paper",
-                        result: values
+                        results: values
                     });
                 }
             });
@@ -587,6 +609,330 @@ exports.verifySocial = function verifySocial(socialData) {
                     } else {
                         return resolve({
                             type: "social",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifySkill = function verifySkill(skillData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM skill", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(skill => {
+                        skillData.forEach(testData => {
+                            if (skill != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve(false);
+                    } else {
+                        return resolve(true);
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyTech = function verifyTech(techData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM technology", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(tech => {
+                        techData.forEach(testData => {
+                            if (tech != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "technology",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "technology",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyRepo = function verifyRepo(repoData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM repository", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(repo => {
+                        repoData.forEach(testData => {
+                            if (repo != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "repository",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "repository",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyExperience = function verifyExperience(experienceData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM experience", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(experience => {
+                        experienceData.forEach(testData => {
+                            if (experience != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve(false);
+                    } else {
+                        return resolve(true);
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyEducation = function verifyEducation(educationData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM education", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(education => {
+                        educationData.forEach(testData => {
+                            if (education != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "education",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "education",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyPapers = function verifyPapers(paperData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM paper", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(paper => {
+                        paperData.forEach(testData => {
+                            if (paper != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "paper",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "paper",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyAchievements = function verifyAchievements(achievmentData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM achievement", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(achievement => {
+                        achievmentData.forEach(testData => {
+                            if (achievement != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "achievement",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "achievement",
+                            result: true
+                        });
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.verifyInterests = function verifyInterests(InterestData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM interest", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    let incorrectData = false;
+
+                    result.forEach(interest => {
+                        InterestData.forEach(testData => {
+                            if (interest != testData) {
+                                incorrectData = true;
+                            }
+                        });
+                    });
+
+                    if (incorrectData) {
+                        return resolve({
+                            type: "interest",
+                            result: false
+                        });
+                    } else {
+                        return resolve({
+                            type: "interest",
                             result: true
                         });
                     }
