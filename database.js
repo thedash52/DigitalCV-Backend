@@ -7,8 +7,63 @@ var pool = mysql.createPool({
     user: 'root',
     password: 'tHedAshc379sq',
     database: 'digitalcv',
-    debug: false
+    debug: true
 });
+
+exports.login = function login(username, password) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM user", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    result.forEach(user => {
+                        if (user.username === username && user.password === password) {
+                            return resolve(user);
+                        }
+                    });
+
+                    return reject();
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.authenticate = function authenticate(id) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("SELECT * FROM user WHERE `id` = '" + id + "' LIMIT 1", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    console.log(result);
+                    if (result.length > 0) {
+                        return resolve(result[0]);
+                    } else {
+                        return reject();
+                    }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
 
 exports.checkDatabase = function checkDatabase() {
     return new Promise(function (resolve, reject) {
@@ -936,6 +991,226 @@ exports.verifyInterests = function verifyInterests(InterestData) {
                             result: true
                         });
                     }
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveBasic = function saveBasic(basicData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.savePhone = function savePhone(phoneData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveSocial = function saveSocial(socialData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveSkill = function saveSkill(skillData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveTechnology = function saveTechnology(technologyData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveRepository = function saveRepository(repositoryData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveExperience = function saveExperience(experienceData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveEducation = function saveEducation(educationData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveAchievement = function saveAchievement(achievementData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject(err);
+            });
+        });
+    });
+}
+
+exports.saveInterest = function saveInterest(interestData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject(err);
+            }
+
+            conn.query("", function (err, result) {
+                conn.release();
+
+                if (!err) {
+                    
                 }
             });
 

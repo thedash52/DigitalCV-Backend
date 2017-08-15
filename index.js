@@ -1,21 +1,59 @@
 var express = require('express');
 var Promise = require('promise');
 var database = require('./database');
+var config = require('./config');
 var cors = require('cors');
 var bodyParser = require('body-parser');
-
-var app = express();
+var auth = require('./auth')();
+var jwt = require('jsonwebtoken');
+var users = require('./user');
 
 var corsOptions = {
     origin: '*'
 }
 
+var app = express();
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(auth.initialize());
+
 const port = 3000;
 
 app.get('/', function (req, res) {
     res.status(200).json("Nothing to see here!");
+});
+
+app.post('/login', function (req, res) {
+    if (req.body.username && req.body.password) {
+        var username = req.body.username;
+        var password = req.body.password;
+
+        database.login(username, password).then(user => {
+            if (user) {
+                var payload = {
+                    id: user.id
+                };
+
+                var token = jwt.sign(payload, config.jwtSecret);
+
+                res.json({
+                    success: "true",
+                    token: token
+                });
+            }
+        }).catch(err => {
+            res.status(401).json({
+                success: "true",
+                result: err
+            });
+        });
+    } else {
+        res.sendStatus(401);
+    }
+});
+
+app.get('/check-login', auth.authenticate(), function (req, res) {
+    res.status(200).json(true);
 });
 
 app.get('/check-connection', function (req, res) {
@@ -321,6 +359,25 @@ app.post('/verify-other', function (req, res) {
         });
 
         res.status(200).json(values);
+    }).catch((err) => {
+        res.status(200).json(err);
+    });
+});
+
+app.post('/save-edit', auth.authenticate(), function (req, res) {
+    database.saveBasic(req.body.basic).then(result =>
+        Promise.all([
+            database.savePhone(req.body.phone),
+            database.saveSocial(req.body.social),
+            database.saveSkill(req.body.skill),
+            database.saveTechnology(req.body.technology),
+            database.saveRepository(req.body.repository),
+            database.saveExperience(req.body.experience),
+            database.saveEducation(req.body.education),
+            database.saveAchievement(req.body.achievement),
+            database.saveInterest(req.body.interest)
+        ])).then((results) => {
+            res.status(200).json(results);
     }).catch((err) => {
         res.status(200).json(err);
     });

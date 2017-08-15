@@ -18,6 +18,18 @@
             "name": "Attach to Process",
             "processId": "${command:PickProcess}",
             "port": 3000
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch via NPM",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run-script",
+                "debug"
+            ],
+            "port": 5858,
+            "protocol": "inspector"
         }
     ]
 }
