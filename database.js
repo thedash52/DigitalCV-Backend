@@ -1005,217 +1005,423 @@ exports.saveBasic = function saveBasic(basicData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveBasic",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
+            var sql;
+            var show_referees = basicData.show_referees ? 1 : 0;
+            var show_repositories = basicData.show_repositories ? 1 : 0;
+
+            if (basicData.id && basicData.id != "") {
+                sql = "UPDATE `basic` SET avatar_img='" + basicData.avatar_img + "', profile_img='" + basicData.profile_img + "', name='" + basicData.name + "', address_1='" + basicData.address_1 + "', address_2='" + basicData.address_2 + "', address_3='" + basicData.address_3 + "', city='" + basicData.city + "', summary='" + basicData.summary + "', show_referees='" + basicData.show_referees + "', show_repositories='" + basicData.show_repositories + "' WHERE id=" + basicData.id;
+            } else {
+                sql = "INSERT INTO `basic` (avatar_img, profile_img, name, address_1, address_2, address_3, city, summary, show_referees, show_repositories) VALUES ('" + basicData.avatar_img + "', '" + basicData.profile_img + "', '" + basicData.name + "', '" + basicData.address_1 + "', '" + basicData.address_2 + "', '" + basicData.address_3 + "', '" + basicData.city + "', '" + basicData.summary + "', '" + show_referees + "', '" + show_repositories + "')";
+            }
+
+            conn.query(sql, function (err, result) {
                 conn.release();
 
                 if (!err) {
-                    
+                    return resolve(result.insertId);
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveBasic",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.savePhone = function savePhone(phoneData) {
+exports.savePhone = function savePhone(id, phoneData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "savePhone",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            phoneData.forEach(phone => {
+                insert.push([id, phone.type.id, phone.number]);
+            })
+
+            conn.query("DELETE FROM `phone` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `phone` (user, type_id, number) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "savePhone",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveSocial = function saveSocial(socialData) {
+exports.saveSocial = function saveSocial(id, socialData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveSocial",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            socialData.forEach(social => {
+                insert.push([id, social.type.id, social.link]);
+            });
+
+            conn.query("DELETE FROM `social` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `social` (user, type_id, link) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveSocial",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveSkill = function saveSkill(skillData) {
+exports.saveSkill = function saveSkill(id, skillData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveSkill",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            skillData.forEach(skill => {
+                insert.push([id, skill.category, skill.detail]);
+            });
+
+            conn.query("DELETE FROM `skill` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `skill` (user, category, details) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveSkill",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveTechnology = function saveTechnology(technologyData) {
+exports.saveTechnology = function saveTechnology(id, technologyData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveTechnology",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            technologyData.forEach(tech => {
+                insert.push([id, tech.img, tech.name, tech.detail, tech.src, tech.category]);
+            });
+
+            conn.query("DELETE FROM `technology` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `technology` (user, image, name, detail, link, category) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveTechnology",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveRepository = function saveRepository(repositoryData) {
+exports.saveRepository = function saveRepository(id, repositoryData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveRepostitory",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            repositoryData.forEach(repo => {
+                insert.push([id, repo.type.id, repo.link]);
+            });
+
+            conn.query("DELETE FROM `repository` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `repository` (user, type_id, link) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveRepository",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveExperience = function saveExperience(experienceData) {
+exports.saveExperience = function saveExperience(id, experienceData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveExperience",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            experienceData.forEach(experience => {
+                var current = experience.current ? 1 : 0;
+                var startDate = new Date(experience.startDate);
+                var endDate = new Date(experience.endDate);
+
+                insert.push([id, experience.img, experience.title, experience.location, experience.description, startDate, endDate, current]);
+            });
+
+            conn.query("DELETE FROM `experience` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `experience` (user, image, title, location, description, start_date, end_date, current) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveExperience",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveEducation = function saveEducation(educationData) {
+exports.saveEducation = function saveEducation(id, educationData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveEducation",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
-
+            conn.query("DELETE FROM `education` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    var count = 0;
+
+                    educationData.forEach(education => {
+                        conn.query("INSERT INTO `education` (user, image, course, school, link, year) VALUES (" + id + ", '" + education.img + "', '" + education.course + "', '" + education.school + "', '" + education.src + "', " + education.year + ")", function (educationErr, educationResult) {
+                            if (!educationErr) {
+                                savePaper(educationResult.insertId, education.papers).then(() => {
+                                    count++;
+
+                                    if (count == educationData.length) {
+                                        conn.release();
+                                        return resolve();
+                                    }
+                                });
+                            }
+                        });
+
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveEducation",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveAchievement = function saveAchievement(achievementData) {
+function savePaper(id, paperData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "savePaper",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            paperData.forEach(paper => {
+                insert.push([paper.code, paper.name, paper.details, paper.grade, id]);
+            });
+
+            conn.query("DELETE FROM `paper` WHERE `course_id` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `paper` (code, name, details, grade, course_id) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveAchievement",
+                    err: err
+                });
             });
         });
     });
 }
 
-exports.saveInterest = function saveInterest(interestData) {
+exports.saveAchievement = function saveAchievement(id, achievementData) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
-                return reject(err);
+                return reject({
+                    method: "saveAchievement",
+                    err: err
+                });
             }
 
-            conn.query("", function (err, result) {
-                conn.release();
+            var insert = [];
 
+            achievementData.forEach(achievement => {
+                insert.push([id, achievement.name, achievement.where, achievement.whatWhy]);
+            });
+
+            conn.query("DELETE FROM `achievement` WHERE `user` = " + id, function (err, result) {
                 if (!err) {
-                    
+                    conn.query("INSERT INTO `achievement` (user, name, `where`, what_why) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
                 }
             });
 
             conn.once('error', function (err) {
-                return reject(err);
+                return reject({
+                    method: "saveAchievement",
+                    err: err
+                });
+            });
+        });
+    });
+}
+
+exports.saveInterest = function saveInterest(id, interestData) {
+    return new Promise(function (resolve, reject) {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                return reject({
+                    method: "saveInterest",
+                    err: err
+                });
+            }
+
+            var insert = [];
+
+            interestData.forEach(interest => {
+                insert.push([id, interest.img, interest.name]);
+            });
+
+            conn.query("DELETE FROM `interest` WHERE `user` = " + id, function (err, result) {
+                if (!err) {
+                    conn.query("INSERT INTO `interest` (user, image, name) VALUES ?", [insert], function (err, result) {
+                        conn.release();
+
+                        if (!err) {
+                            return resolve();
+                        }
+                    });
+                }
+            });
+
+            conn.once('error', function (err) {
+                return reject({
+                    method: "saveInterest",
+                    err: err
+                });
             });
         });
     });

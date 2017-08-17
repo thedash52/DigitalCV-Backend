@@ -367,19 +367,24 @@ app.post('/verify-other', function (req, res) {
 app.post('/save-edit', auth.authenticate(), function (req, res) {
     database.saveBasic(req.body.basic).then(result =>
         Promise.all([
-            database.savePhone(req.body.phone),
-            database.saveSocial(req.body.social),
-            database.saveSkill(req.body.skill),
-            database.saveTechnology(req.body.technology),
-            database.saveRepository(req.body.repository),
-            database.saveExperience(req.body.experience),
-            database.saveEducation(req.body.education),
-            database.saveAchievement(req.body.achievement),
-            database.saveInterest(req.body.interest)
+            database.savePhone(result, req.body.phone),
+            database.saveSocial(result, req.body.social),
+            database.saveSkill(result, req.body.skill),
+            database.saveTechnology(result, req.body.technology),
+            database.saveRepository(result, req.body.repository),
+            database.saveExperience(result, req.body.experience),
+            database.saveEducation(result, req.body.education),
+            database.saveAchievement(result, req.body.achievement),
+            database.saveInterest(result, req.body.interest)
         ])).then((results) => {
-            res.status(200).json(results);
+            res.status(200).json({
+                result: true
+            });
     }).catch((err) => {
-        res.status(200).json(err);
+        res.status(200).json({
+            result: false,
+            err: err
+        });
     });
 });
 
