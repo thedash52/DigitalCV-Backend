@@ -116,6 +116,7 @@ app.get('/get-skills', function (req, res) {
         results.forEach(function (value) {
             var data = {
                 id: value.id,
+                user: value.user,
                 category: value.category,
                 details: value.details
             };
@@ -190,12 +191,13 @@ app.get('/get-experience', function (req, res) {
         results.forEach(function (experience) {
             var data = {
                 id: experience.id,
-                img: experience.image,
+                user: experience.user,
+                image: experience.image,
                 title: experience.title,
                 location: experience.location,
                 description: experience.description,
-                startDate: experience.start_date,
-                endDate: experience.end_date,
+                start_date: experience.start_date,
+                end_date: experience.end_date,
                 current: experience.current
             };
 
@@ -237,9 +239,9 @@ app.get('/get-other', function (req, res) {
 
 app.post('/verify-basic', function (req, res) {
     Promise.all([
-        database.verifyBasic(req.body.basic),
-        database.verifyPhone(req.body.phone),
-        database.verifySocial(req.body.social)
+        database.verifyBasic(req.body.basic.basic),
+        database.verifyPhone(req.body.basic.phone),
+        database.verifySocial(req.body.basic.social)
     ]).then((results) => {
         var values = {
             basic: null,
@@ -260,15 +262,14 @@ app.post('/verify-basic', function (req, res) {
                     break;
             }
         });
-
         res.status(200).json(values);
     }).catch((err) => {
         res.status(200).json(err);
     });
 });
 
-app.post('/verify-skills', function (req, res) {
-    database.verifySkill(req.body).then((results) => {
+app.post('/verify-skill', function (req, res) {
+    database.verifySkill(req.body.skill).then((results) => {
         res.status(200).json(results);
     }).catch((err) => {
         res.status(200).json(err);
@@ -277,8 +278,8 @@ app.post('/verify-skills', function (req, res) {
 
 app.post('/verify-tech', function (req, res) {
     Promise.all([
-        database.verifyTech(req.body.technologies),
-        database.verifyRepo(req.body.repositories)
+        database.verifyTech(req.body.tech.technologies),
+        database.verifyRepo(req.body.tech.repositories)
     ]).then((results) => {
         var values = {
             technology: null,
@@ -303,7 +304,7 @@ app.post('/verify-tech', function (req, res) {
 });
 
 app.post('/verify-experience', function (req, res) {
-    database.verifyExperience(req.body).then((results) => {
+    database.verifyExperience(req.body.experience).then((results) => {
         res.status(200).json(results);
     }).catch((err) => {
         res.status(200).json(err);
@@ -312,8 +313,8 @@ app.post('/verify-experience', function (req, res) {
 
 app.post('/verify-education', function (req, res) {
     Promise.all([
-        database.verifyEducation(req.body.education),
-        database.verifyPapers(req.body.papers)
+        database.verifyEducation(req.body.education.education),
+        database.verifyPapers(req.body.education.papers)
     ]).then((results) => {
         var values = {
             education: null,
@@ -339,8 +340,8 @@ app.post('/verify-education', function (req, res) {
 
 app.post('/verify-other', function (req, res) {
     Promise.all([
-        database.verifyAchievements(req.body.achievement),
-        database.verifyInterests(req.body.interest)
+        database.verifyAchievements(req.body.other.achievement),
+        database.verifyInterests(req.body.other.interest)
     ]).then((results) => {
         var values = {
             achievement: null,
@@ -377,9 +378,9 @@ app.post('/save-edit', auth.authenticate(), function (req, res) {
             database.saveAchievement(result, req.body.achievement),
             database.saveInterest(result, req.body.interest)
         ])).then((results) => {
-            res.status(200).json({
-                result: true
-            });
+        res.status(200).json({
+            result: true
+        });
     }).catch((err) => {
         res.status(200).json({
             result: false,

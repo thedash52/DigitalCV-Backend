@@ -7,7 +7,7 @@ var pool = mysql.createPool({
     user: 'root',
     password: 'tHedAshc379sq',
     database: 'digitalcv',
-    debug: true
+    debug: false
 });
 
 exports.login = function login(username, password) {
@@ -148,11 +148,10 @@ exports.getPhone = function getPhone() {
             conn.query("SELECT * FROM phone", function (err, result) {
                 if (!err) {
                     var phoneNumbers = [];
-                    var count = 0;
 
                     if (result.length > 0) {
                         result.forEach(function (phone) {
-                            conn.query("SELECT * FROM `type` WHERE `id` == phone.type_id", function (err, typeResult) {
+                            conn.query("SELECT * FROM `type` WHERE `id` = " + phone.type_id, function (err, typeResult) {
                                 if (!err) {
                                     var phoneDetails = {
                                         id: phone.id,
@@ -166,18 +165,16 @@ exports.getPhone = function getPhone() {
                                     };
 
                                     phoneNumbers.push(phoneDetails);
+
+                                    if (phoneNumbers.length == result.length) {
+                                        conn.release();
+                                        return resolve({
+                                            type: "phone",
+                                            results: phoneNumbers
+                                        });
+                                    }
                                 }
                             });
-
-                            if (count = result.length - 1) {
-                                conn.release();
-                                return resolve({
-                                    type: "phone",
-                                    results: phoneNumbers
-                                });
-                            } else {
-                                count++;
-                            }
                         });
                     } else {
                         conn.release();
@@ -206,11 +203,10 @@ exports.getSocial = function getSocial() {
             conn.query("SELECT * FROM social", function (err, result) {
                 if (!err) {
                     var socialData = [];
-                    var count = 0;
 
                     if (result.length > 0) {
                         result.forEach(function (social) {
-                            conn.query("SELECT * FROM `type` WHERE `id` == social.type_id", function (err, typeResult) {
+                            conn.query("SELECT * FROM `type` WHERE `id` = " + social.type_id, function (err, typeResult) {
                                 if (!err) {
                                     var socialDetails = {
                                         id: social.id,
@@ -224,18 +220,16 @@ exports.getSocial = function getSocial() {
                                     };
 
                                     socialData.push(socialDetails);
+
+                                    if (socialData.length == result.length) {
+                                        conn.release();
+                                        return resolve({
+                                            type: "social",
+                                            results: socialData
+                                        });
+                                    }
                                 }
                             });
-
-                            if (count = result.length - 1) {
-                                conn.release();
-                                return resolve({
-                                    type: "social",
-                                    results: socialData
-                                });
-                            } else {
-                                count++;
-                            }
                         });
                     } else {
                         conn.release();
@@ -292,6 +286,7 @@ exports.getTechnologies = function getTechnologies() {
                     result.forEach(function (technology) {
                         var value = {
                             id: technology.id,
+                            user: technology.user,
                             img: technology.image,
                             name: technology.name,
                             detail: technology.detail,
@@ -326,36 +321,33 @@ exports.getRepositories = function getRepositories() {
             conn.query("SELECT * FROM repository", function (err, result) {
                 if (!err) {
                     var repositoryData = [];
-                    var count = 0;
 
                     if (result.length > 0) {
-                        result.forEach(function (respository) {
-                            conn.query("SELECT * FROM `type` WHERE `id` == repository.type_id", function (err, typeResult) {
+                        result.forEach(function (repository) {
+                            conn.query("SELECT * FROM `type` WHERE `id` = " + repository.type_id, function (err, typeResult) {
                                 if (!err) {
                                     var repositoryDetails = {
-                                        id: respository.id,
-                                        user: respository.user,
+                                        id: repository.id,
+                                        user: repository.user,
                                         type: {
                                             id: typeResult[0].id,
                                             short: typeResult[0].short,
                                             long: typeResult[0].long
                                         },
-                                        link: respository.link
+                                        link: repository.link
                                     };
 
                                     repositoryData.push(repositoryDetails);
+
+                                    if (repositoryData.length == result.length) {
+                                        conn.release();
+                                        return resolve({
+                                            type: "repository",
+                                            results: repositoryData
+                                        });
+                                    }
                                 }
                             });
-
-                            if (count = result.length - 1) {
-                                conn.release();
-                                return resolve({
-                                    type: "repository",
-                                    results: repositoryData
-                                });
-                            } else {
-                                count++;
-                            }
                         });
                     } else {
                         conn.release();
@@ -412,6 +404,7 @@ exports.getEducation = function getEducation() {
                     result.forEach(function (education) {
                         var data = {
                             id: education.id,
+                            user: education.user,
                             img: education.image,
                             course: education.course,
                             school: education.school,
@@ -492,6 +485,7 @@ exports.getAchievements = function getAchievements() {
                     result.forEach(function (achievement) {
                         var data = {
                             id: achievement.id,
+                            user: achievement.user,
                             name: achievement.name,
                             where: achievement.where,
                             whatWhy: achievement.what_why
@@ -530,6 +524,7 @@ exports.getInterests = function getInterests() {
                     result.forEach(function (interest) {
                         var data = {
                             id: interest.id,
+                            user: interest.user,
                             img: interest.image,
                             name: interest.name
                         };
@@ -558,21 +553,14 @@ exports.verifyBasic = function verifyBasic(basicData) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM basic", function (err, result) {
+            conn.query("SELECT * FROM basic WHERE `id` = " + basicData.id, function (err, result) {
                 conn.release();
 
                 if (!err) {
-                    let incorrectData = false;
+                    basicData.show_referees = basicData.show_referees ? 1 : 0;
+                    basicData.show_repositories = basicData.show_repositories ? 1 : 0;
 
-                    result.forEach(basic => {
-                        basicData.forEach(testData => {
-                            if (basic != testData) {
-                                incorrectData = true;
-                            }
-                        });
-                    });
-
-                    if (incorrectData) {
+                    if (JSON.stringify(result[0]) !== JSON.stringify(basicData)) {
                         return resolve({
                             type: "basic",
                             result: false
@@ -607,11 +595,24 @@ exports.verifyPhone = function verifyPhone(phoneData) {
                     let incorrectData = false;
 
                     result.forEach(phone => {
+                        var matchingRecord = false;
+
                         phoneData.forEach(testData => {
-                            if (phone != testData) {
-                                incorrectData = true;
+                            var test = {
+                                id: testData.id,
+                                user: testData.user,
+                                type_id: testData.type.id,
+                                number: testData.number
+                            };
+
+                            if (JSON.stringify(phone) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -649,11 +650,24 @@ exports.verifySocial = function verifySocial(socialData) {
                     let incorrectData = false;
 
                     result.forEach(social => {
+                        let matchingRecord = false;
+
                         socialData.forEach(testData => {
-                            if (social != testData) {
-                                incorrectData = true;
+                            var test = {
+                                id: testData.id,
+                                user: testData.user,
+                                type_id: testData.type.id,
+                                link: testData.link
+                            };
+
+                            if (JSON.stringify(social) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -691,11 +705,24 @@ exports.verifySkill = function verifySkill(skillData) {
                     let incorrectData = false;
 
                     result.forEach(skill => {
+                        let matchingRecord = false;
+
                         skillData.forEach(testData => {
-                            if (skill != testData) {
-                                incorrectData = true;
+                            var test = {
+                                id: testData.id,
+                                user: testData.user,
+                                category: testData.category,
+                                details: testData.details
+                            }
+
+                            if (JSON.stringify(skill) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -727,11 +754,27 @@ exports.verifyTech = function verifyTech(techData) {
                     let incorrectData = false;
 
                     result.forEach(tech => {
+                        let matchingRecord = false;
+
                         techData.forEach(testData => {
-                            if (tech != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                image: testData.img,
+                                name: testData.name,
+                                detail: testData.detail,
+                                link: testData.link,
+                                category: testData.category
+                            }
+
+                            if (JSON.stringify(tech) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -769,11 +812,24 @@ exports.verifyRepo = function verifyRepo(repoData) {
                     let incorrectData = false;
 
                     result.forEach(repo => {
+                        let matchingRecord = false;
+
                         repoData.forEach(testData => {
-                            if (repo != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                type_id: testData.type.id,
+                                link: testData.link
+                            }
+
+                            if (JSON.stringify(repo) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -811,11 +867,29 @@ exports.verifyExperience = function verifyExperience(experienceData) {
                     let incorrectData = false;
 
                     result.forEach(experience => {
+                        let matchingRecord = false;
+
                         experienceData.forEach(testData => {
-                            if (experience != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                image: testData.image,
+                                title: testData.title,
+                                location: testData.location,
+                                description: testData.description,
+                                start_date: new Date(testData.start_date),
+                                end_date: new Date(testData.end_date),
+                                current: testData.current ? 1 : 0
+                            }
+
+                            if (JSON.stringify(experience) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -847,11 +921,27 @@ exports.verifyEducation = function verifyEducation(educationData) {
                     let incorrectData = false;
 
                     result.forEach(education => {
+                        let matchingRecord = false;
+
                         educationData.forEach(testData => {
-                            if (education != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                image: testData.img,
+                                course: testData.course,
+                                school: testData.school,
+                                link: testData.link,
+                                year: testData.year
+                            }
+
+                            if (JSON.stringify(education) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -889,11 +979,26 @@ exports.verifyPapers = function verifyPapers(paperData) {
                     let incorrectData = false;
 
                     result.forEach(paper => {
+                        let matchingRecord = false;
+
                         paperData.forEach(testData => {
-                            if (paper != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                code: testData.code,
+                                name: testData.name,
+                                details: testData.detail,
+                                grade: testData.grade,
+                                course_id: testData.course
+                            }
+
+                            if (JSON.stringify(paper) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -931,11 +1036,25 @@ exports.verifyAchievements = function verifyAchievements(achievmentData) {
                     let incorrectData = false;
 
                     result.forEach(achievement => {
+                        let matchingRecord = false;
+
                         achievmentData.forEach(testData => {
-                            if (achievement != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                name: testData.name,
+                                where: testData.where,
+                                what_why: testData.whatWhy
+                            }
+
+                            if (JSON.stringify(achievement) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -973,11 +1092,24 @@ exports.verifyInterests = function verifyInterests(InterestData) {
                     let incorrectData = false;
 
                     result.forEach(interest => {
+                        let matchingRecord = false;
+
                         InterestData.forEach(testData => {
-                            if (interest != testData) {
-                                incorrectData = true;
+                            let test = {
+                                id: testData.id,
+                                user: testData.user,
+                                image: testData.img,
+                                name: testData.name
+                            }
+
+                            if (JSON.stringify(interest) == JSON.stringify(test)) {
+                                matchingRecord = true;
                             }
                         });
+
+                        if (!matchingRecord) {
+                            incorrectData = true;
+                        }
                     });
 
                     if (incorrectData) {
@@ -1015,8 +1147,8 @@ exports.saveBasic = function saveBasic(basicData) {
             var show_referees = basicData.show_referees ? 1 : 0;
             var show_repositories = basicData.show_repositories ? 1 : 0;
 
-            if (basicData.id && basicData.id != "") {
-                sql = "UPDATE `basic` SET avatar_img='" + basicData.avatar_img + "', profile_img='" + basicData.profile_img + "', name='" + basicData.name + "', address_1='" + basicData.address_1 + "', address_2='" + basicData.address_2 + "', address_3='" + basicData.address_3 + "', city='" + basicData.city + "', summary='" + basicData.summary + "', show_referees='" + basicData.show_referees + "', show_repositories='" + basicData.show_repositories + "' WHERE id=" + basicData.id;
+            if (basicData.id && basicData.id != null && typeof (basicData.id) != "undefined") {
+                sql = "UPDATE `basic` SET avatar_img='" + basicData.avatar_img + "', profile_img='" + basicData.profile_img + "', name='" + basicData.name + "', address_1='" + basicData.address_1 + "', address_2='" + basicData.address_2 + "', address_3='" + basicData.address_3 + "', city='" + basicData.city + "', summary='" + basicData.summary + "', show_referees='" + show_referees + "', show_repositories='" + show_repositories + "' WHERE id=" + basicData.id;
             } else {
                 sql = "INSERT INTO `basic` (avatar_img, profile_img, name, address_1, address_2, address_3, city, summary, show_referees, show_repositories) VALUES ('" + basicData.avatar_img + "', '" + basicData.profile_img + "', '" + basicData.name + "', '" + basicData.address_1 + "', '" + basicData.address_2 + "', '" + basicData.address_3 + "', '" + basicData.city + "', '" + basicData.summary + "', '" + show_referees + "', '" + show_repositories + "')";
             }
@@ -1025,7 +1157,11 @@ exports.saveBasic = function saveBasic(basicData) {
                 conn.release();
 
                 if (!err) {
-                    return resolve(result.insertId);
+                    if (result.insertId > 0) {
+                        return resolve(result.insertId);
+                    } else {
+                        return resolve(basicData.id);
+                    }
                 }
             });
 
