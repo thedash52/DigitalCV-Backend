@@ -34,7 +34,9 @@ app.post('/login', function (req, res) {
                     id: user.id
                 };
 
-                var token = jwt.sign(payload, config.jwtSecret);
+                var token = jwt.sign(payload, config.jwtSecret, {
+                    expiresIn: "3h"
+                });
 
                 res.json({
                     success: "true",
@@ -43,7 +45,7 @@ app.post('/login', function (req, res) {
             }
         }).catch(err => {
             res.status(401).json({
-                success: "true",
+                success: "false",
                 result: err
             });
         });

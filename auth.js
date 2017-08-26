@@ -7,7 +7,8 @@ var Strategy = passportJwt.Strategy;
 
 var params = {
     secretOrKey: config.jwtSecret,
-    jwtFromRequest: extract.fromAuthHeader()
+    jwtFromRequest: extract.fromAuthHeader(),
+    ignoreExpiration: false
 };
 
 module.exports = function () {
