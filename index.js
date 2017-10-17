@@ -6,18 +6,36 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var auth = require('./auth')();
 var jwt = require('jsonwebtoken');
-var users = require('./user');
+
+var whiteList = ['http://thedashcoder.online', 'http://www.thedashcoder.online', 'http://digitalcv.local:8080', 'http://localhost:4200'];
 
 var corsOptions = {
-    origin: '*'
-}
+    origin: function (origin, cb) {
+        if (whiteList.indexOf(origin) !== -1) {
+            cb(null, true);
+        } else if (origin == 'undefined') {
+            cb(null, true);
+        } else {
+            cb(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: "GET,POST",
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization, basicId"
+};
 
 var app = express();
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({
+    limit: '50mb'
+}));
 app.use(auth.initialize());
 
 const port = 3000;
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log(reason);
+    console.log(promise);
+});
 
 app.get('/', function (req, res) {
     res.status(200).json("Nothing to see here!");
@@ -80,11 +98,12 @@ app.get('/get-type', function (req, res) {
 })
 
 app.get('/get-basic', function (req, res) {
-    Promise.all([
-        database.getBasic(),
-        database.getPhone(),
-        database.getSocial()
-    ]).then((results) => {
+    database.getBasic().then(basic =>
+        Promise.all([
+            database.getBasic(),
+            database.getPhone(typeof(basic.results) == 'undefined'? -1 : basic.results.id),
+            database.getSocial(typeof(basic.results) == 'undefined'? -1 : basic.results.id)
+        ])).then((results) => {
         var values = {
             basic: null,
             phone: null,
@@ -107,12 +126,13 @@ app.get('/get-basic', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
 
 app.get('/get-skills', function (req, res) {
-    database.getSkills().then((results) => {
+    database.getSkills(req.headers['basicid']).then((results) => {
         var values = [];
 
         results.forEach(function (value) {
@@ -134,8 +154,8 @@ app.get('/get-skills', function (req, res) {
 
 app.get('/get-technology', function (req, res) {
     Promise.all([
-        database.getTechnologies(),
-        database.getRepositories()
+        database.getTechnologies(req.headers['basicid']),
+        database.getRepositories(req.headers['basicid'])
     ]).then((results) => {
         var values = {
             technologies: null,
@@ -161,8 +181,8 @@ app.get('/get-technology', function (req, res) {
 
 app.get('/get-education', function (req, res) {
     Promise.all([
-        database.getEducation(),
-        database.getPapers()
+        database.getEducation(req.headers['basicid']),
+        database.getPapers(req.headers['basicid'])
     ]).then((results) => {
         var values = {
             education: null,
@@ -187,7 +207,7 @@ app.get('/get-education', function (req, res) {
 });
 
 app.get('/get-experience', function (req, res) {
-    database.getExperience().then((results) => {
+    database.getExperience(req.headers['basicid']).then((results) => {
         var values = [];
 
         results.forEach(function (experience) {
@@ -214,8 +234,8 @@ app.get('/get-experience', function (req, res) {
 
 app.get('/get-other', function (req, res) {
     Promise.all([
-        database.getAchievements(),
-        database.getInterests()
+        database.getAchievements(req.headers['basicid']),
+        database.getInterests(req.headers['basicid'])
     ]).then((results) => {
         var values = {
             achievement: null,
@@ -368,22 +388,24 @@ app.post('/verify-other', function (req, res) {
 });
 
 app.post('/save-edit', auth.authenticate(), function (req, res) {
-    database.saveBasic(req.body.basic).then(result =>
+    var data = req.body.edit;
+    database.saveBasic(data.basic).then(result =>
         Promise.all([
-            database.savePhone(result, req.body.phone),
-            database.saveSocial(result, req.body.social),
-            database.saveSkill(result, req.body.skill),
-            database.saveTechnology(result, req.body.technology),
-            database.saveRepository(result, req.body.repository),
-            database.saveExperience(result, req.body.experience),
-            database.saveEducation(result, req.body.education),
-            database.saveAchievement(result, req.body.achievement),
-            database.saveInterest(result, req.body.interest)
+            database.savePhone(result, data.phone),
+            database.saveSocial(result, data.social),
+            database.saveSkill(result, data.skill),
+            database.saveTechnology(result, data.technology),
+            database.saveRepository(result, data.repository),
+            database.saveExperience(result, data.experience),
+            database.saveEducation(result, data.education),
+            database.saveAchievement(result, data.achievement),
+            database.saveInterest(result, data.interest)
         ])).then((results) => {
         res.status(200).json({
             result: true
         });
     }).catch((err) => {
+        console.log(err);
         res.status(200).json({
             result: false,
             err: err
@@ -391,10 +413,12 @@ app.post('/save-edit', auth.authenticate(), function (req, res) {
     });
 });
 
-app.listen(port, (err) => {
+var server = app.listen(port, (err) => {
     if (err) {
         return console.log('Connection Error', err);
     }
 
-    console.log(`server is listening on ${port}`);
+    var host = server.address().address;
+
+    console.log(`server is listening on http://${host}:${port}`);
 });

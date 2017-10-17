@@ -1,11 +1,13 @@
 var mysql = require('mysql');
 var Promise = require('promise');
+var fs = require('./fileSystem');
+var uuid = require('uuid/v4');
 
 var pool = mysql.createPool({
     connectionLimit: 100,
     host: 'localhost',
-    user: 'root',
-    password: 'tHedAshc379sq',
+    user: 'digitalcv',
+    password: 'MZDZABHwNA5UIPwm',
     database: 'digitalcv',
     debug: false
 });
@@ -49,7 +51,6 @@ exports.authenticate = function authenticate(id) {
                 conn.release();
 
                 if (!err) {
-                    console.log(result);
                     if (result.length > 0) {
                         return resolve(result[0]);
                     } else {
@@ -124,9 +125,30 @@ exports.getBasic = function getBasic() {
                 conn.release();
 
                 if (!err) {
-                    return resolve({
-                        type: "basic",
-                        results: result[0]
+                    var basicData = result[0];
+
+                    if (typeof (basicData) != 'undefined' && (basicData.folder_id && basicData.avatar_img && basicData.profile_img)) {
+                        fs.getBasicImages(basicData.folder_id, basicData.avatar_img, basicData.profile_img).then(images => {
+                            basicData.avatar = images.avatar;
+                            basicData.profile = images.profile;
+
+                            return resolve({
+                                type: "basic",
+                                results: basicData
+                            });
+                        }).catch(err => {
+                            return reject(err);
+                        });
+                    } else {
+                        return resolve({
+                            type: "basic",
+                            results: basicData
+                        });
+                    }
+                } else {
+                    return reject({
+                        method: "getBasic",
+                        err: err
                     });
                 }
             });
@@ -138,53 +160,70 @@ exports.getBasic = function getBasic() {
     });
 };
 
-exports.getPhone = function getPhone() {
+exports.getPhone = function getPhone(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM phone", function (err, result) {
-                if (!err) {
-                    var phoneNumbers = [];
+            if (id > -1) {
+                conn.query("SELECT * FROM phone WHERE `user` = " + id, function (err, result) {
+                    if (!err) {
+                        var phoneNumbers = [];
 
-                    if (result.length > 0) {
-                        result.forEach(function (phone) {
-                            conn.query("SELECT * FROM `type` WHERE `id` = " + phone.type_id, function (err, typeResult) {
-                                if (!err) {
-                                    var phoneDetails = {
-                                        id: phone.id,
-                                        user: phone.user,
-                                        type: {
-                                            id: typeResult[0].id,
-                                            short: typeResult[0].short,
-                                            long: typeResult[0].long
-                                        },
-                                        number: phone.number
-                                    };
+                        if (result.length > 0) {
+                            result.forEach(function (phone) {
+                                conn.query("SELECT * FROM `type` WHERE `id` = " + phone.type_id, function (err, typeResult) {
+                                    if (!err) {
+                                        var phoneDetails = {
+                                            id: phone.id,
+                                            user: phone.user,
+                                            type: {
+                                                id: typeResult[0].id,
+                                                short: typeResult[0].short,
+                                                long: typeResult[0].long
+                                            },
+                                            number: phone.number
+                                        };
 
-                                    phoneNumbers.push(phoneDetails);
+                                        phoneNumbers.push(phoneDetails);
 
-                                    if (phoneNumbers.length == result.length) {
-                                        conn.release();
-                                        return resolve({
-                                            type: "phone",
-                                            results: phoneNumbers
+                                        if (phoneNumbers.length == result.length) {
+                                            conn.release();
+                                            return resolve({
+                                                type: "phone",
+                                                results: phoneNumbers
+                                            });
+                                        }
+                                    } else {
+                                        return reject({
+                                            method: "getPhone",
+                                            err: err
                                         });
                                     }
-                                }
+                                });
                             });
-                        });
+                        } else {
+                            conn.release();
+                            return resolve({
+                                type: "phone",
+                                results: result
+                            });
+                        }
                     } else {
-                        conn.release();
-                        return resolve({
-                            type: "phone",
-                            results: result
+                        return reject({
+                            method: "getPhone",
+                            err: err
                         });
                     }
-                }
-            });
+                });
+            } else {
+                return resolve({
+                    type: "phone",
+                    results: null
+                });
+            }
 
             conn.once('error', function (err) {
                 return reject(err);
@@ -193,53 +232,70 @@ exports.getPhone = function getPhone() {
     });
 };
 
-exports.getSocial = function getSocial() {
+exports.getSocial = function getSocial(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM social", function (err, result) {
-                if (!err) {
-                    var socialData = [];
+            if (id > -1) {
+                conn.query("SELECT * FROM social WHERE `user` = " + id, function (err, result) {
+                    if (!err) {
+                        var socialData = [];
 
-                    if (result.length > 0) {
-                        result.forEach(function (social) {
-                            conn.query("SELECT * FROM `type` WHERE `id` = " + social.type_id, function (err, typeResult) {
-                                if (!err) {
-                                    var socialDetails = {
-                                        id: social.id,
-                                        user: social.user,
-                                        type: {
-                                            id: typeResult[0].id,
-                                            short: typeResult[0].short,
-                                            long: typeResult[0].long
-                                        },
-                                        link: social.link
-                                    };
+                        if (result.length > 0) {
+                            result.forEach(function (social) {
+                                conn.query("SELECT * FROM `type` WHERE `id` = " + social.type_id, function (err, typeResult) {
+                                    if (!err) {
+                                        var socialDetails = {
+                                            id: social.id,
+                                            user: social.user,
+                                            type: {
+                                                id: typeResult[0].id,
+                                                short: typeResult[0].short,
+                                                long: typeResult[0].long
+                                            },
+                                            link: social.link
+                                        };
 
-                                    socialData.push(socialDetails);
+                                        socialData.push(socialDetails);
 
-                                    if (socialData.length == result.length) {
-                                        conn.release();
-                                        return resolve({
-                                            type: "social",
-                                            results: socialData
+                                        if (socialData.length == result.length) {
+                                            conn.release();
+                                            return resolve({
+                                                type: "social",
+                                                results: socialData
+                                            });
+                                        }
+                                    } else {
+                                        return reject({
+                                            method: "getSocial",
+                                            err: err
                                         });
                                     }
-                                }
+                                });
                             });
-                        });
+                        } else {
+                            conn.release();
+                            return resolve({
+                                type: "social",
+                                results: result
+                            });
+                        }
                     } else {
-                        conn.release();
-                        return resolve({
-                            type: "social",
-                            results: result
+                        return reject({
+                            method: "getSocial",
+                            err: err
                         });
                     }
-                }
-            });
+                });
+            } else {
+                return resolve({
+                    type: "phone",
+                    results: null
+                });
+            }
 
             conn.once('error', function (err) {
                 return reject(err);
@@ -248,18 +304,23 @@ exports.getSocial = function getSocial() {
     });
 };
 
-exports.getSkills = function getSkills() {
+exports.getSkills = function getSkills(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM skill", function (err, result) {
+            conn.query("SELECT * FROM skill WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
                     return resolve(result);
+                } else {
+                    return reject({
+                        method: "getSKills",
+                        err: err
+                    });
                 }
             });
 
@@ -270,14 +331,14 @@ exports.getSkills = function getSkills() {
     });
 }
 
-exports.getTechnologies = function getTechnologies() {
+exports.getTechnologies = function getTechnologies(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM technology", function (err, result) {
+            conn.query("SELECT * FROM technology WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
@@ -301,6 +362,11 @@ exports.getTechnologies = function getTechnologies() {
                         type: "technology",
                         results: values
                     });
+                } else {
+                    return reject({
+                        method: "getTech",
+                        err: err
+                    });
                 }
             });
 
@@ -311,14 +377,14 @@ exports.getTechnologies = function getTechnologies() {
     });
 }
 
-exports.getRepositories = function getRepositories() {
+exports.getRepositories = function getRepositories(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM repository", function (err, result) {
+            conn.query("SELECT * FROM repository WHERE `user` = " + id, function (err, result) {
                 if (!err) {
                     var repositoryData = [];
 
@@ -346,6 +412,11 @@ exports.getRepositories = function getRepositories() {
                                             results: repositoryData
                                         });
                                     }
+                                } else {
+                                    return reject({
+                                        method: "getRepo",
+                                        err: err
+                                    });
                                 }
                             });
                         });
@@ -356,6 +427,11 @@ exports.getRepositories = function getRepositories() {
                             results: result
                         });
                     }
+                } else {
+                    return reject({
+                        method: "getRepo",
+                        err: err
+                    });
                 }
             });
 
@@ -366,18 +442,23 @@ exports.getRepositories = function getRepositories() {
     });
 }
 
-exports.getExperience = function getExperience() {
+exports.getExperience = function getExperience(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM experience", function (err, result) {
+            conn.query("SELECT * FROM experience WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
                     return resolve(result);
+                } else {
+                    return reject({
+                        method: "getExperience",
+                        err: err
+                    });
                 }
             });
 
@@ -388,14 +469,14 @@ exports.getExperience = function getExperience() {
     });
 }
 
-exports.getEducation = function getEducation() {
+exports.getEducation = function getEducation(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM education", function (err, result) {
+            conn.query("SELECT * FROM education WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
@@ -419,6 +500,11 @@ exports.getEducation = function getEducation() {
                         type: "education",
                         results: values
                     });
+                } else {
+                    return reject({
+                        method: "getEducation",
+                        err: err
+                    });
                 }
             });
 
@@ -429,7 +515,7 @@ exports.getEducation = function getEducation() {
     });
 }
 
-exports.getPapers = function getPapers() {
+exports.getPapers = function getPapers(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
@@ -459,6 +545,11 @@ exports.getPapers = function getPapers() {
                         type: "paper",
                         results: values
                     });
+                } else {
+                    return reject({
+                        method: "getPapers",
+                        err: err
+                    });
                 }
             });
 
@@ -469,14 +560,14 @@ exports.getPapers = function getPapers() {
     });
 }
 
-exports.getAchievements = function getAchievements() {
+exports.getAchievements = function getAchievements(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM achievement", function (err, result) {
+            conn.query("SELECT * FROM achievement WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
@@ -498,6 +589,11 @@ exports.getAchievements = function getAchievements() {
                         type: "achievement",
                         results: values
                     });
+                } else {
+                    return reject({
+                        method: "getAchievements",
+                        err: err
+                    });
                 }
             });
 
@@ -508,14 +604,14 @@ exports.getAchievements = function getAchievements() {
     });
 }
 
-exports.getInterests = function getInterests() {
+exports.getInterests = function getInterests(id) {
     return new Promise(function (resolve, reject) {
         pool.getConnection((err, conn) => {
             if (err) {
                 return reject(err);
             }
 
-            conn.query("SELECT * FROM interest", function (err, result) {
+            conn.query("SELECT * FROM interest WHERE `user` = " + id, function (err, result) {
                 conn.release();
 
                 if (!err) {
@@ -535,6 +631,11 @@ exports.getInterests = function getInterests() {
                     return resolve({
                         type: "interest",
                         results: values
+                    });
+                } else {
+                    return reject({
+                        method: "getInterests",
+                        err: err
                     });
                 }
             });
@@ -560,17 +661,24 @@ exports.verifyBasic = function verifyBasic(basicData) {
                     basicData.show_referees = basicData.show_referees ? 1 : 0;
                     basicData.show_repositories = basicData.show_repositories ? 1 : 0;
 
-                    if (JSON.stringify(result[0]) !== JSON.stringify(basicData)) {
-                        return resolve({
-                            type: "basic",
-                            result: false
-                        });
-                    } else {
-                        return resolve({
-                            type: "basic",
-                            result: true
-                        });
-                    }
+                    var basic = result[0];
+
+                    fs.getBasicImages(basicData.folder_id, basic.avatar_img, basic.profile_img).then(images => {
+                        basic.avatar = images.avatar;
+                        basic.profile = images.profile;
+
+                        if (JSON.stringify(basic) !== JSON.stringify(basicData)) {
+                            return resolve({
+                                type: "basic",
+                                result: false
+                            });
+                        } else {
+                            return resolve({
+                                type: "basic",
+                                result: true
+                            });
+                        }
+                    });
                 }
             });
 
@@ -1135,43 +1243,58 @@ exports.verifyInterests = function verifyInterests(InterestData) {
 
 exports.saveBasic = function saveBasic(basicData) {
     return new Promise(function (resolve, reject) {
-        pool.getConnection((err, conn) => {
-            if (err) {
-                return reject({
-                    method: "saveBasic",
-                    err: err
-                });
-            }
+        var folderId;
 
-            var sql;
-            var show_referees = basicData.show_referees ? 1 : 0;
-            var show_repositories = basicData.show_repositories ? 1 : 0;
+        if (basicData.folder_id && basicData.folder_id != null && typeof (basicData.folder_id) != "undefined") {
+            folderId = basicData.folder_id;
+        } else {
+            folderId = uuid();
+        }
 
-            if (basicData.id && basicData.id != null && typeof (basicData.id) != "undefined") {
-                sql = "UPDATE `basic` SET avatar_img='" + basicData.avatar_img + "', profile_img='" + basicData.profile_img + "', name='" + basicData.name + "', address_1='" + basicData.address_1 + "', address_2='" + basicData.address_2 + "', address_3='" + basicData.address_3 + "', city='" + basicData.city + "', summary='" + basicData.summary + "', show_referees='" + show_referees + "', show_repositories='" + show_repositories + "' WHERE id=" + basicData.id;
-            } else {
-                sql = "INSERT INTO `basic` (avatar_img, profile_img, name, address_1, address_2, address_3, city, summary, show_referees, show_repositories) VALUES ('" + basicData.avatar_img + "', '" + basicData.profile_img + "', '" + basicData.name + "', '" + basicData.address_1 + "', '" + basicData.address_2 + "', '" + basicData.address_3 + "', '" + basicData.city + "', '" + basicData.summary + "', '" + show_referees + "', '" + show_repositories + "')";
-            }
-
-            conn.query(sql, function (err, result) {
-                conn.release();
-
-                if (!err) {
-                    if (result.insertId > 0) {
-                        return resolve(result.insertId);
-                    } else {
-                        return resolve(basicData.id);
-                    }
+        fs.saveBasicImages(folderId, basicData.avatar, basicData.profile).then(paths =>
+            pool.getConnection((err, conn) => {
+                if (err) {
+                    return reject({
+                        method: "saveBasic",
+                        err: err
+                    });
                 }
-            });
 
-            conn.once('error', function (err) {
-                return reject({
-                    method: "saveBasic",
-                    err: err
+                var sql;
+                var show_referees = basicData.show_referees ? 1 : 0;
+                var show_repositories = basicData.show_repositories ? 1 : 0;
+
+                if (basicData.id && basicData.id != null && typeof (basicData.id) != "undefined") {
+                    sql = "UPDATE `basic` SET folder_id='" + folderId + "', avatar_img='" + paths.avatar + "', profile_img='" + paths.profile + "', name='" + basicData.name + "', address_1='" + basicData.address_1 + "', address_2='" + basicData.address_2 + "', address_3='" + basicData.address_3 + "', city='" + basicData.city + "', summary='" + basicData.summary + "', show_referees='" + show_referees + "', show_repositories='" + show_repositories + "' WHERE id=" + basicData.id;
+                } else {
+                    sql = "INSERT INTO `basic` (folder_id, avatar_img, profile_img, name, address_1, address_2, address_3, city, summary, show_referees, show_repositories) VALUES ('" + folderId + "', '" + paths.avatar + "', '" + paths.profile + "', '" + basicData.name + "', '" + basicData.address_1 + "', '" + basicData.address_2 + "', '" + basicData.address_3 + "', '" + basicData.city + "', '" + basicData.summary + "', '" + show_referees + "', '" + show_repositories + "')";
+                }
+
+                conn.query(sql, function (err, result) {
+                    conn.release();
+
+                    if (!err) {
+                        if (result.insertId > 0) {
+                            return resolve(result.insertId);
+                        } else {
+                            return resolve(basicData.id);
+                        }
+                    } else {
+                        return reject({
+                            method: "saveBasic",
+                            err: err
+                        });
+                    }
                 });
-            });
-        });
+
+                conn.once('error', function (err) {
+                    return reject({
+                        method: "saveBasic",
+                        err: err
+                    });
+                });
+            })
+        );
     });
 }
 
@@ -1198,7 +1321,17 @@ exports.savePhone = function savePhone(id, phoneData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "savePhone",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "savePhone",
+                        err: err
                     });
                 }
             });
@@ -1236,7 +1369,17 @@ exports.saveSocial = function saveSocial(id, socialData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveSocial",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveSocial",
+                        err: err
                     });
                 }
             });
@@ -1274,7 +1417,17 @@ exports.saveSkill = function saveSkill(id, skillData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveSkill",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveSkill",
+                        err: err
                     });
                 }
             });
@@ -1312,7 +1465,17 @@ exports.saveTechnology = function saveTechnology(id, technologyData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveTechnology",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveTechnology",
+                        err: err
                     });
                 }
             });
@@ -1350,7 +1513,17 @@ exports.saveRepository = function saveRepository(id, repositoryData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveRepo",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveRepo",
+                        err: err
                     });
                 }
             });
@@ -1392,7 +1565,17 @@ exports.saveExperience = function saveExperience(id, experienceData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveExperience",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveExperience",
+                        err: err
                     });
                 }
             });
@@ -1432,9 +1615,19 @@ exports.saveEducation = function saveEducation(id, educationData) {
                                         return resolve();
                                     }
                                 });
+                            } else {
+                                return reject({
+                                    method: "saveEducation",
+                                    err: educationErr
+                                });
                             }
                         });
 
+                    });
+                } else {
+                    return reject({
+                        method: "saveEducation",
+                        err: err
                     });
                 }
             });
@@ -1472,7 +1665,17 @@ function savePaper(id, paperData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "savePaper",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "savePaper",
+                        err: err
                     });
                 }
             });
@@ -1510,7 +1713,17 @@ exports.saveAchievement = function saveAchievement(id, achievementData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveAchievement",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveAchievement",
+                        err: err
                     });
                 }
             });
@@ -1548,7 +1761,17 @@ exports.saveInterest = function saveInterest(id, interestData) {
 
                         if (!err) {
                             return resolve();
+                        } else {
+                            return reject({
+                                method: "saveInterest",
+                                err: err
+                            });
                         }
+                    });
+                } else {
+                    return reject({
+                        method: "saveInterest",
+                        err: err
                     });
                 }
             });

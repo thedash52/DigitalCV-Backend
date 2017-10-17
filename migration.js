@@ -4,8 +4,8 @@ var migration = require('mysql-migrations');
 var pool = mysql.createPool({
     connectionLimit: 100,
     host: 'localhost',
-    user: 'root',
-    password: 'tHedAshc379sq',
+    user: 'digitalcv',
+    password: 'MZDZABHwNA5UIPwm',
     database: 'digitalcv'
 });
 
