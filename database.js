@@ -490,7 +490,7 @@ exports.getEducation = function getEducation(id) {
                             course: education.course,
                             school: education.school,
                             link: education.link,
-                            category: education.category
+                            year: education.year
                         };
 
                         values.push(data);
