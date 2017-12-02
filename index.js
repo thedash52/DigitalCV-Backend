@@ -148,6 +148,7 @@ app.get('/get-skills', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -175,6 +176,7 @@ app.get('/get-technology', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -202,6 +204,7 @@ app.get('/get-education', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -228,6 +231,7 @@ app.get('/get-experience', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -255,6 +259,7 @@ app.get('/get-other', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -286,6 +291,7 @@ app.post('/verify-basic', function (req, res) {
         });
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -321,6 +327,7 @@ app.post('/verify-tech', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -356,6 +363,7 @@ app.post('/verify-education', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
@@ -383,6 +391,7 @@ app.post('/verify-other', function (req, res) {
 
         res.status(200).json(values);
     }).catch((err) => {
+        console.log(err);
         res.status(200).json(err);
     });
 });
