@@ -39,7 +39,7 @@ app.use(bodyParser.json({
 }));
 app.use(auth.initialize());
 
-const port = 80;
+const port = process.env.PORT || 3000;
 
 process.on('unhandledRejection', (reason, promise) => {
     console.log(reason);
