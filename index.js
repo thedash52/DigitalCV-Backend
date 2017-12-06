@@ -7,7 +7,16 @@ var bodyParser = require('body-parser');
 var auth = require('./auth')();
 var jwt = require('jsonwebtoken');
 
-var whiteList = ['http://thedashcoder.online', 'http://www.thedashcoder.online', 'http://localhost:4200', 'http://citizen.hosts.net.nz:8880'];
+var whiteList = [
+    'http://thedashcoder.online',
+    'https://thedashcoder.online',
+    'http://thedashcoder.online/',
+    'http://www.thedashcoder.online',
+    'https://www.thedashcoder.online',
+    'http://www.thedashcoder.online/',
+    'http://localhost:4200',
+    'http://citizen.hosts.net.nz:8880'
+];
 
 var corsOptions = {
     origin: function (origin, cb) {
