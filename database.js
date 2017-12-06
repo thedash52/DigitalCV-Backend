@@ -2,15 +2,9 @@ var mysql = require('mysql');
 var Promise = require('promise');
 var fs = require('./fileSystem');
 var uuid = require('uuid/v4');
+var config = require('./config/config');
 
-var pool = mysql.createPool({
-    connectionLimit: 100,
-    host: 'localhost',
-    user: 'digitalcv',
-    password: 'MZDZABHwNA5UIPwm',
-    database: 'digitalcv',
-    debug: false
-});
+var pool = mysql.createPool(config.debug ? config.databaseDebug : config.databaseProd);
 
 exports.login = function login(username, password) {
     return new Promise(function (resolve, reject) {

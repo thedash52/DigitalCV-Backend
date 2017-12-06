@@ -1,13 +1,13 @@
 var express = require('express');
 var Promise = require('promise');
 var database = require('./database');
-var config = require('./config');
+var config = require('./config/config');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var auth = require('./auth')();
 var jwt = require('jsonwebtoken');
 
-var whiteList = ['http://thedashcoder.online', 'http://www.thedashcoder.online', 'http://digitalcv.local:8080', 'http://localhost:4200'];
+var whiteList = ['http://thedashcoder.online', 'http://www.thedashcoder.online', 'http://localhost:4200'];
 
 var corsOptions = {
     origin: function (origin, cb) {
