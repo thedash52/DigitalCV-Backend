@@ -28,8 +28,8 @@ var corsOptions = {
             cb(new Error('Not allowed by CORS'));
         }
     },
-    methods: "GET,POST",
-    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization, basicId"
+    methods: ['GET','POST'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'basicId']
 };
 
 var app = express();
