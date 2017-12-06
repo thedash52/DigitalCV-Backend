@@ -10,9 +10,11 @@ var jwt = require('jsonwebtoken');
 var whiteList = [
     'http://thedashcoder.online',
     'https://thedashcoder.online',
+    'https://thedashcoder.online/',
     'http://thedashcoder.online/',
     'http://www.thedashcoder.online',
     'https://www.thedashcoder.online',
+    'https://www.thedashcoder.online/',
     'http://www.thedashcoder.online/',
     'http://localhost:4200',
     'http://citizen.hosts.net.nz:8880'
@@ -20,13 +22,11 @@ var whiteList = [
 
 var corsOptions = {
     origin: function (origin, cb) {
-        if (whiteList.indexOf(origin) !== -1) {
-            cb(null, true);
-        } else if (origin == 'undefined') {
+        if (origin === undefined || whiteList.indexOf(origin) !== -1) {
             cb(null, true);
         } else {
             cb(new Error('Not allowed by CORS'));
-        }
+        };
     },
     methods: ['GET','POST'],
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'basicId']
