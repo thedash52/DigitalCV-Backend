@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 var express = require('express');
 var Promise = require('promise');
 var database = require('./database');

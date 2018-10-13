@@ -4,7 +4,20 @@ var fs = require('./fileSystem');
 var uuid = require('uuid/v4');
 var config = require('./config/config');
 
-var pool = mysql.createPool(config.debug ? config.databaseDebug : config.databaseProd);
+const options;
+
+if (process.env.DB_INSTANCE_NAME && (process.env.NODE_ENV === 'production' || config.debug)) {
+	options = {
+		user: process.env.DB_USER,
+		password: process.env.DB_PASS,
+		database: process.env.DB_DATABASE,
+		socketPath: `/cloudsql/${process.env.DB_INSTANCE_NAME}`
+	};
+} else {
+	options = config.databaseDebug;
+}
+
+var pool = mysql.createPool(options);
 
 exports.login = function login(username, password) {
     return new Promise(function (resolve, reject) {
