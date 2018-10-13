@@ -4,7 +4,7 @@ var fs = require('./fileSystem');
 var uuid = require('uuid/v4');
 var config = require('./config/config');
 
-const options;
+var options = {};
 
 if (process.env.DB_INSTANCE_NAME && (process.env.NODE_ENV === 'production' || config.debug)) {
 	options = {
