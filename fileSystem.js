@@ -1,12 +1,34 @@
-var fs = require('fs');
-var mkdir = require('mkdirp');
+const fs = require('fs');
+const mkdir = require('mkdirp');
 
-exports.saveBasicImages = function saveBasicImages(id, avatar_image, profile_image) {
+const { Storage} = require('@google-cloud/storage');
+const storage = new Storage({
+	projectId: process.env.PROJECT_ID
+});
+
+const CLOUD_BUCKET = process.env.CLOUD_BUCKET;
+
+const functions = {};
+
+functions.testStorageAuth = function () {
+	return new Promise ((resolve, reject) => {
+		storage.getBuckets().then(function (data) {
+			const buckets = data[0];
+
+			resolve(buckets);
+		})
+		.catch(function (err) {
+			reject(err);
+		});
+	});
+}
+
+functions.saveBasicImages = function saveBasicImages(id, avatar_image, profile_image) {
     return new Promise((resolve, reject) => {
-        var avatarImage = avatar_image.replace(/^data:image\/\w+;base64,/, '');
-        var profileImage = profile_image.replace(/^data:image\/\w+;base64,/, '');
+        const avatarImage = avatar_image.replace(/^data:image\/\w+;base64,/, '');
+        const profileImage = profile_image.replace(/^data:image\/\w+;base64,/, '');
 
-        var folderPath = __dirname + "/files/" + id + "/images/basic";
+        const folderPath = __dirname + "/files/" + id + "/images/basic";
 
         mkdir(folderPath, (err) => {
             if (err) {
@@ -46,10 +68,10 @@ exports.saveBasicImages = function saveBasicImages(id, avatar_image, profile_ima
     });
 };
 
-exports.getBasicImages = function getBasicImages(folderId, avatar_image, profile_image) {
+functions.getBasicImages = function getBasicImages(folderId, avatar_image, profile_image) {
     return new Promise((resolve, reject) => {
-        var avatar = "data:image/jpeg;base64,";
-        var profile = "data:image/jpeg;base64,";
+        const avatar = "data:image/jpeg;base64,";
+        const profile = "data:image/jpeg;base64,";
 
         fs.readFile(__dirname + "/files/" + folderId + avatar_image, {
             encoding: 'base64'
@@ -84,3 +106,5 @@ exports.getBasicImages = function getBasicImages(folderId, avatar_image, profile
 
     })
 };
+
+module.exports = functions;

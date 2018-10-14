@@ -6,13 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "node index.js --inspect",
-	"start": "node index.js",
+    "start": "node index.js",
     "up": "node migration.js up",
     "down": "node migration.js down"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^2.1.0",
     "body-parser": "^1.17.2",
     "cors": "^2.8.4",
     "dotenv": "^6.1.0",

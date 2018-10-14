@@ -1,15 +1,16 @@
 require('dotenv').config();
 
-var express = require('express');
-var Promise = require('promise');
-var database = require('./database');
-var config = require('./config/config');
-var cors = require('cors');
-var bodyParser = require('body-parser');
-var auth = require('./auth')();
-var jwt = require('jsonwebtoken');
+const express = require('express');
+const Promise = require('promise');
+const database = require('./database');
+const config = require('./config/config');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const auth = require('./auth')();
+const jwt = require('jsonwebtoken');
+const fs = require('./fileSystem');
 
-var whiteList = [
+const whiteList = [
     'http://thedashcoder.online',
     'https://thedashcoder.online',
     'https://thedashcoder.online/',
@@ -22,7 +23,7 @@ var whiteList = [
     'http://citizen.hosts.net.nz:8880'
 ];
 
-var corsOptions = {
+const corsOptions = {
     origin: function (origin, cb) {
         if (origin === undefined || whiteList.indexOf(origin) !== -1) {
             cb(null, true);
@@ -34,7 +35,7 @@ var corsOptions = {
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'basicId']
 };
 
-var app = express();
+const app = express();
 app.use(cors(corsOptions));
 app.use(bodyParser.json({
     limit: '50mb'
@@ -52,18 +53,31 @@ app.get('/', function (req, res) {
     res.status(200).json("Nothing to see here!");
 });
 
+app.get('/test-storage', function (req, res) {
+	fs.testStorageAuth().then((result) => {
+		if (result.length > 0) {
+			res.status(200).send("Authenticated");
+		} else {
+			res.status(500).send("Unable to get Bucket List. This could be because of missing/invalid credentials");
+		}
+	})
+	.catch((err) => {
+		res.status(401).send(err);
+	});
+})
+
 app.post('/login', function (req, res) {
     if (req.body.username && req.body.password) {
-        var username = req.body.username;
-        var password = req.body.password;
+        const username = req.body.username;
+        const password = req.body.password;
 
         database.login(username, password).then(user => {
             if (user) {
-                var payload = {
+                const payload = {
                     id: user.id
                 };
 
-                var token = jwt.sign(payload, config.jwtSecret, {
+                const token = jwt.sign(payload, config.jwtSecret, {
                     expiresIn: "3h"
                 });
 
@@ -88,7 +102,7 @@ app.get('/check-login', auth.authenticate(), function (req, res) {
 });
 
 app.get('/check-connection', function (req, res) {
-    var testResults = {
+    const testResults = {
         connection: true,
         database: false,
         err: ""
@@ -115,7 +129,7 @@ app.get('/get-basic', function (req, res) {
             database.getPhone(typeof(basic.results) == 'undefined'? -1 : basic.results.id),
             database.getSocial(typeof(basic.results) == 'undefined'? -1 : basic.results.id)
         ])).then((results) => {
-        var values = {
+        const values = {
             basic: null,
             phone: null,
             social: null
@@ -144,10 +158,10 @@ app.get('/get-basic', function (req, res) {
 
 app.get('/get-skills', function (req, res) {
     database.getSkills(req.headers['basicid']).then((results) => {
-        var values = [];
+        const values = [];
 
         results.forEach(function (value) {
-            var data = {
+            const data = {
                 id: value.id,
                 user: value.user,
                 category: value.category,
@@ -169,7 +183,7 @@ app.get('/get-technology', function (req, res) {
         database.getTechnologies(req.headers['basicid']),
         database.getRepositories(req.headers['basicid'])
     ]).then((results) => {
-        var values = {
+        const values = {
             technologies: null,
             repositories: null
         };
@@ -197,7 +211,7 @@ app.get('/get-education', function (req, res) {
         database.getEducation(req.headers['basicid']),
         database.getPapers(req.headers['basicid'])
     ]).then((results) => {
-        var values = {
+        const values = {
             education: null,
             papers: null
         };
@@ -222,10 +236,10 @@ app.get('/get-education', function (req, res) {
 
 app.get('/get-experience', function (req, res) {
     database.getExperience(req.headers['basicid']).then((results) => {
-        var values = [];
+        const values = [];
 
         results.forEach(function (experience) {
-            var data = {
+            const data = {
                 id: experience.id,
                 user: experience.user,
                 image: experience.image,
@@ -252,7 +266,7 @@ app.get('/get-other', function (req, res) {
         database.getAchievements(req.headers['basicid']),
         database.getInterests(req.headers['basicid'])
     ]).then((results) => {
-        var values = {
+        const values = {
             achievement: null,
             interest: null
         };
@@ -281,7 +295,7 @@ app.post('/verify-basic', function (req, res) {
         database.verifyPhone(req.body.basic.phone),
         database.verifySocial(req.body.basic.social)
     ]).then((results) => {
-        var values = {
+        const values = {
             basic: null,
             phone: null,
             social: null
@@ -320,7 +334,7 @@ app.post('/verify-tech', function (req, res) {
         database.verifyTech(req.body.tech.technologies),
         database.verifyRepo(req.body.tech.repositories)
     ]).then((results) => {
-        var values = {
+        const values = {
             technology: null,
             repository: null
         }
@@ -356,7 +370,7 @@ app.post('/verify-education', function (req, res) {
         database.verifyEducation(req.body.education.education),
         database.verifyPapers(req.body.education.papers)
     ]).then((results) => {
-        var values = {
+        const values = {
             education: null,
             paper: null
         }
@@ -384,7 +398,7 @@ app.post('/verify-other', function (req, res) {
         database.verifyAchievements(req.body.other.achievement),
         database.verifyInterests(req.body.other.interest)
     ]).then((results) => {
-        var values = {
+        const values = {
             achievement: null,
             interest: null
         }
@@ -408,7 +422,7 @@ app.post('/verify-other', function (req, res) {
 });
 
 app.post('/save-edit', auth.authenticate(), function (req, res) {
-    var data = req.body.edit;
+    const data = req.body.edit;
     database.saveBasic(data.basic).then(result =>
         Promise.all([
             database.savePhone(result, data.phone),
@@ -433,12 +447,12 @@ app.post('/save-edit', auth.authenticate(), function (req, res) {
     });
 });
 
-var server = app.listen(port, (err) => {
+const server = app.listen(port, (err) => {
     if (err) {
         return console.log('Connection Error', err);
     }
 
-    var host = server.address().address;
+    const host = server.address().address;
 
     console.log(`server is listening on http://${host}:${port}`);
 });
