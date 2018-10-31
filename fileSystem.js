@@ -1,12 +1,14 @@
 const fs = require('fs');
 const mkdir = require('mkdirp');
 
-const { Storage} = require('@google-cloud/storage');
+const { Storage } = require('@google-cloud/storage');
 const storage = new Storage({
 	projectId: process.env.PROJECT_ID
 });
 
 const CLOUD_BUCKET = process.env.CLOUD_BUCKET;
+
+const bucket = storage.bucket(CLOUD_BUCKET);
 
 const functions = {};
 
@@ -23,12 +25,65 @@ functions.testStorageAuth = function () {
 	});
 }
 
+functions.setBasicImages = function (id, avatar_image, profile_image) {
+	return new Promise((resolve, reject) => {
+		const avatarImage = avatar_image.replace(/^data:image\/\w+;base64,/, '');
+		const profileImage = profile_image.replace(/^data:image\/\w+;base64,/, '');
+
+		const folderDir = '/backend' + id + '/images/basic';
+		
+		const avatarFile = bucket.file(folderDir + '/avatar_img.jpg');
+		const profileFile = bucket.file(folderDir + '/profile_img.jpg');
+
+		const options = {
+			metadata: {
+				contentType: 'image/jpeg'
+			},
+			resumable: false
+		};
+
+		const avatarStream = avatarFile.createWriteStream(options);
+		const profileStream = profileFile.createWriteStream(options);
+
+		avatarStream.on('error', (err) => {
+			reject({
+				method: "saveBasicImages",
+				err: err
+			});
+		});
+
+		profileStream.on('error', (err) => {
+			reject({
+				method: "saveBasicImages",
+				err: err
+			});
+		});
+
+		profileStream.on('finish', () => {
+			profileFile.makePublic().then(() => {
+				resolve({
+					avatar: `https://storage.googleapis.com/${CLOUD_BUCKET}/${folderDir + '/avatar_img.jpg'}`,
+					profile: `https://storage.googleapis.com/${CLOUD_BUCKET}/${folderDir + '/profile_img.jpg'}`
+				});
+			});
+		});
+
+		avatarStream.on('finish', () => {
+			avatarFile.makePublic().then(() => {
+				profileStream.end(Buffer.from(profileImage, 'base64'));
+			});
+		});
+
+		avatarStream.end(Buffer.from(avatarImage, 'base64'));
+	});
+}
+
 functions.saveBasicImages = function saveBasicImages(id, avatar_image, profile_image) {
     return new Promise((resolve, reject) => {
         const avatarImage = avatar_image.replace(/^data:image\/\w+;base64,/, '');
         const profileImage = profile_image.replace(/^data:image\/\w+;base64,/, '');
 
-        const folderPath = __dirname + "/files/" + id + "/images/basic";
+		const folderPath = __dirname + "/files/" + id + "/images/basic";
 
         mkdir(folderPath, (err) => {
             if (err) {

@@ -64,7 +64,7 @@ app.get('/test-storage', function (req, res) {
 	.catch((err) => {
 		res.status(401).send(err);
 	});
-})
+});
 
 app.post('/login', function (req, res) {
     if (req.body.username && req.body.password) {

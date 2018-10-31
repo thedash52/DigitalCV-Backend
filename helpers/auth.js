@@ -1,9 +1,8 @@
 const passport = require('passport');
 const passportJwt = require('passport-jwt');
-const database = require('./database');
-const config = require('./config/config');
-const extract = passportJwt.ExtractJwt;
-const Strategy = passportJwt.Strategy;
+// const database = require('../database');
+const config = require('../config/config');
+const { ExtractJwt: extract, Strategy } = passportJwt;
 
 const params = {
     secretOrKey: config.jwtSecret,
