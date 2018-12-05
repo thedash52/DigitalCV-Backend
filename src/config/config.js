@@ -1,5 +1,6 @@
 export const jwtSecret = "testSecret";
-export const debug = false;
+export const debug = true;
+export const logLevel = 'error';
 export const databaseDebug = {
 	connectionLimit: 100,
 	host: 'localhost',

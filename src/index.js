@@ -1,9 +1,9 @@
-require('dotenv').config();
+require('dotenv').config({debug: true});
 
-import { fork, on, setupMaster } from 'cluster';
-import { createLogger } from './helpers/logger';
+import Logger from './helpers/logger';
+import cluster from 'cluster';
 
-const logger = createLogger('master');
+const logger = Logger.init();
 
 process.on('uncaughtException', function(err) {
     logger.error('Uncaught Exception => %s\n\n%s', err.message, err.stack);
@@ -13,17 +13,17 @@ process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection => %s\n\n%s', reason, promise);
 });
 
-setupMaster({
+cluster.setupMaster({
     exec: './helpers/workers.js'
 });
 
 var cpu = require('os').cpus().length;
 
 for (let i = 0; i < cpu; i++) {
-    fork();
+    cluster.fork();
 }
 
-on('exit', function (worker) {
+cluster.on('exit', function (worker) {
     logger.warn(`Worker ${worker.id} died. Restarting Worker`);
-    fork();
+    cluster.fork();
 });

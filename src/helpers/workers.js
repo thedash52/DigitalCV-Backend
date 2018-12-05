@@ -1,9 +1,9 @@
-const logManager = require('./logger');
-const cluster = require('cluster');
+import Logger from './logger';
+import app from './app';
+import cluster from 'cluster';
+import { debug } from '../config/config';
 
-const logger = logManager.init();
-const config = require('../config/config');
-const app = require('./app');
+const logger = Logger.createLogger('worker');
 
 const port = process.env.PORT || 3000;
 
@@ -22,7 +22,7 @@ const server = https.listen(port, (err) => {
         logger.error('Connection Error => %s\n\n%s', err.message, err.stack);
     }
 
-    if (config.debug) {
+    if (debug) {
         var host = server.address();
 
         if (!host || (!host.address || host.address == '' || host.address == '::')) {

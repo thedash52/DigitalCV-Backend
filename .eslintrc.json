@@ -32,7 +32,7 @@
             "1tbs"
         ],
         "callback-return": "off",
-        "camelcase": "error",
+        "camelcase": "off",
         "capitalized-comments": [
             "error",
             "never"
@@ -112,10 +112,17 @@
         "lines-between-class-members": "error",
         "max-depth": "error",
         "max-len": "off",
-        "max-lines": "error",
+        "max-lines": [
+            "error",
+            {
+                "max": 600,
+                "skipBlankLines": true,
+                "skipComments": true
+            }
+        ],
         "max-nested-callbacks": "error",
         "max-params": "error",
-        "max-statements": "error",
+        "max-statements": ["error", 20],
         "max-statements-per-line": "error",
         "multiline-comment-style": "error",
         "new-parens": "off",

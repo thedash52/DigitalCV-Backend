@@ -1,15 +1,14 @@
-const logManager = require('./logger');
-logManager.createLogger('api');
+import { corsWhiteListDebug, corsWhiteListProd, debug } from '../config/config';
+import Auth from './auth';
+import AuthController from '../api/AuthController';
+import TestController from '../api/TestController';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
 
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const auth = new Auth();
 
-const config = require('../config/config');
-
-const TestController = require('../api/TestController');
-
-var whiteList = config.debug ? config.corsWhiteListDebug : config.corsWhiteListProd;
+var whiteList = debug ? corsWhiteListDebug : corsWhiteListProd;
 
 var corsOptions = {
     origin: function (origin, cb) {
@@ -28,6 +27,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({
     limit: '50mb'
 }));
+app.use(auth.initialize())
 
 app.get('/', function(req, res) {
     res.status(200).json("Nothing to see here!");
@@ -38,5 +38,6 @@ app.post('/', function(req, res) {
 });
 
 app.use('/test', TestController);
+app.use('/auth', AuthController);
 
-module.exports = app;
+export default app;
