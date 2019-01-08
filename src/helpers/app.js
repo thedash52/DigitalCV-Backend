@@ -1,7 +1,10 @@
 import { corsWhiteListDebug, corsWhiteListProd, debug } from '../config/config';
 import Auth from './auth';
 import AuthController from '../api/AuthController';
+import GetController from '../api/GetController';
+import SaveController from '../api/SaveController';
 import TestController from '../api/TestController';
+import VerifyController from '../api/VerifyController';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
@@ -23,6 +26,7 @@ var corsOptions = {
 };
 
 var app = express();
+app.set('trust proxy', true);
 app.use(cors(corsOptions));
 app.use(bodyParser.json({
     limit: '50mb'
@@ -39,5 +43,8 @@ app.post('/', function(req, res) {
 
 app.use('/test', TestController);
 app.use('/auth', AuthController);
+app.use('/get', GetController);
+app.use('/verify', VerifyController);
+app.use('/save', SaveController);
 
 export default app;

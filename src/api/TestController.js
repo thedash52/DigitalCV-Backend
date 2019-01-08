@@ -27,25 +27,24 @@ routes.get('/test-storage', function (req, res) {
 			}
 		})
 		.catch((err) => {
-			res.status(401).send(err);
 			logger.error(err);
+			res.status(401).send(err);
 		});
 });
 
 routes.get('/check-connection', function (req, res) {
     const testResults = {
         connection: true,
-        database: false,
-        err: ''
+        database: false
     };
 
-    db.checkDatabase().then((result) => {
+    db.checkDatabase().then(() => {
         testResults.database = true;
-        testResults.err = result;
         res.status(200).json(testResults);
     }).catch((err) => {
+        logger.error(err);
         testResults.err = err;
-        res.status(200).json(testResults);
+        res.status(500).json(testResults);
     });
 });
 

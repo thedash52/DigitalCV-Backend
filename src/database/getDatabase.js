@@ -9,7 +9,7 @@ const db = new database();
 const functions = {};
 
 functions.getType = function () {
-    db.select({ col: '*', table: 'type'}).then((res) => {
+    return db.select({ col: '*', table: 'type'}).then((res) => {
         return Promise.resolve({
             type: 'type',
             results: res
@@ -25,7 +25,7 @@ functions.getType = function () {
 }
 
 functions.getBasic = function () {
-    db.select({ col: '*', table: 'basic', limit: '1'}).then((res) => {
+    return db.select({ col: '*', table: 'basic', limit: '1'}).then((res) => {
         const { 0: basicData} = res;
 
         if (typeof (basicData) != 'undefined' && (basicData.folder_id && basicData.avatar_img && basicData.profile_img)) {
@@ -54,9 +54,9 @@ functions.getBasic = function () {
 
 functions.getPhone = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'phone', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'phone', conditions: `user = ${id}`}).then((res) => {
             if (res.length > 0) {
-                db.select({ col: '*', table: 'type', conditions: `id IN ${res.map((data) => data.type_id)}`}).then((typeRes) => {
+                return db.select({ col: '*', table: 'type', conditions: `id IN (${res.map((data) => data.type_id)})`}).then((typeRes) => {
                     const phoneNumbers = [];
                     
                     for (let p = 0; p < res.length; p++) {
@@ -116,9 +116,9 @@ functions.getPhone = function (id) {
 
 functions.getSocial = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'social', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'social', conditions: `user = ${id}`}).then((res) => {
             if (res.length > 0) {
-                db.select({ col: '*', table: 'type', conditions: `id IN ${res.map((data) => data.type_id)}`}).then((typeRes) => {
+                return db.select({ col: '*', table: 'type', conditions: `id IN (${res.map((data) => data.type_id)})`}).then((typeRes) => {
                     const socialData = [];
 
                     for (let s = 0; s < res.length; s++) {
@@ -178,7 +178,7 @@ functions.getSocial = function (id) {
 
 functions.getSkills = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'skill', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'skill', conditions: `user = ${id}`}).then((res) => {
             return Promise.resolve({
                 type: 'skills',
                 results: res
@@ -201,7 +201,7 @@ functions.getSkills = function (id) {
 
 functions.getTechnologies = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'technology', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'technology', conditions: `user = ${id}`}).then((res) => {
             const values = [];
 
             for (let r = 0; r < res.length; r++) {
@@ -242,9 +242,9 @@ functions.getTechnologies = function (id) {
 
 functions.getRepositories = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'repository', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'repository', conditions: `user = ${id}`}).then((res) => {
             if (res.length > 0) {
-                db.select({ col: '*', table: 'type', conditions: `id IN ${res.map((data) => data.type_id)}`}).then((typeRes) => {
+                return db.select({ col: '*', table: 'type', conditions: `id IN (${res.map((data) => data.type_id)})`}).then((typeRes) => {
                     const repositoryData = [];
 
                     for (let r = 0; r < res.length; r++) {
@@ -304,7 +304,7 @@ functions.getRepositories = function (id) {
 
 functions.getExperience = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'experience', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'experience', conditions: `user = ${id}`}).then((res) => {
             return Promise.resolve({
                 type: 'experience',
                 results: res
@@ -327,7 +327,7 @@ functions.getExperience = function (id) {
 
 functions.getEducation = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'education', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'education', conditions: `user = ${id}`}).then((res) => {
             const values = [];
 
             for (let r = 0; r < res.length; r++) {
@@ -367,8 +367,8 @@ functions.getEducation = function (id) {
 }
 
 functions.getPapers = function (id) {
-    if (id > -1) {
-        db.select({ col: '*', table: 'paper', conditions: `course_id = ${id}`}).then((res) => {
+    if (id.length) {
+        return db.select({ col: '*', table: 'paper', conditions: `course_id IN (${id})`}).then((res) => {
             const values = [];
 
             for (let r = 0; r < res.length; r++) {
@@ -408,7 +408,7 @@ functions.getPapers = function (id) {
 
 functions.getAchievements = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'achievement', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'achievement', conditions: `user = ${id}`}).then((res) => {
             const values = [];
 
             for (let r = 0; r < res.length; r++) {
@@ -447,7 +447,7 @@ functions.getAchievements = function (id) {
 
 functions.getInterests = function (id) {
     if (id > -1) {
-        db.select({ col: '*', table: 'interest', conditions: `user = ${id}`}).then((res) => {
+        return db.select({ col: '*', table: 'interest', conditions: `user = ${id}`}).then((res) => {
             const values = [];
 
             for (let r = 0; r < res.length; r++) {

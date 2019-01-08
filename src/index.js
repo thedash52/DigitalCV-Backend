@@ -1,4 +1,4 @@
-require('dotenv').config({debug: true});
+require('dotenv').config();
 
 import Logger from './helpers/logger';
 import cluster from 'cluster';

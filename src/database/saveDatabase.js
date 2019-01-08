@@ -19,7 +19,7 @@ functions.saveBasic = function (basicData) {
         folderId = uuid();
     }
 
-    fm.saveBasicImages(folderId, basicData.avatar, basicData.profile).then((paths) => {
+    return fm.saveBasicImages(folderId, basicData.avatar, basicData.profile).then((paths) => {
         let pendingFunction;
         let sql;
         const data = [
@@ -69,20 +69,20 @@ functions.saveBasic = function (basicData) {
             }
         }
 
-        pendingFunction(sql).then((res) => {
+        return pendingFunction(sql).then((res) => {
             if (res.insertId > 0) {
                 return Promise.resolve(res.insertId);
             } else {
                 return Promise.resolve(basicData.id);
             }
         }).catch((err) => {
-                logger.error(`Database Error: ${err}`);
+            logger.error(`Database Error: ${err}`);
 
-                return Promise.reject({
-                    method: 'saveBasic',
-                    err: err
-                });
+            return Promise.reject({
+                method: 'saveBasic',
+                err: err
             });
+        });
 
     }).catch((err) => {
         logger.error(`File Error: ${err}`)

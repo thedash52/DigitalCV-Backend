@@ -40,19 +40,19 @@ routes.post('/login', function (req, res) {
                 const token = jwt.sign(payload, debug? jwtSecret : process.env.JWT_SECRET, options);
 
                 res.json({
-                    success: 'true',
+                    success: true,
                     token: token
                 });
             }
         }).catch(err => {
             res.status(401).json({
-                success: 'false',
+                success: false,
                 result: err
             });
         });
     } else {
         res.sendStatus(401).json({
-            success: 'false',
+            success: false,
             result: 'Missing Username/Password.'
         });
     }

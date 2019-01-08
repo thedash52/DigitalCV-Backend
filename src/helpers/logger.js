@@ -1,10 +1,12 @@
 import { debug, logLevel } from '../config/config';
-import path from 'path';
+import { LoggingWinston } from '@google-cloud/logging-winston';
+//import path from 'path';
 import winston from 'winston';
 
 const loggers = new winston.Container();
+const loggingWinston = new LoggingWinston();
 
-const logPath = path.join(__dirname, '..', 'logs');
+//const logPath = path.join(__dirname, '..', 'logs');
 
 export default class Logger {
     static init() {
@@ -15,20 +17,7 @@ export default class Logger {
             }), winston.format.splat(), winston.format.timestamp(), winston.format.printf((info) => `${info.timestamp} - ${info.level}: (${info.label}) ${JSON.stringify(info.message)}`)),
             transports: [
                 new winston.transports.Console(),
-                new winston.transports.File({
-                    filename: path.join(logPath, 'full.log'),
-                    level: 'info',
-                    maxsize: 10 * 1024 * 1024,
-                    maxFiles: 5,
-                    tailable: true
-                }),
-                new winston.transports.File({
-                    filename: path.join(logPath, 'error.log'),
-                    level: 'error',
-                    maxsize: 10 * 1024 * 1024,
-                    maxFiles: 5,
-                    tailable: true
-                })
+                loggingWinston
             ],
             exitOnError: false
         };
@@ -54,20 +43,7 @@ export default class Logger {
             }), winston.format.splat(), winston.format.timestamp(), winston.format.printf(info => `${info.timestamp} - ${info.level}: (${info.label}) ${info.message}`)),
             transports: [
                 new winston.transports.Console(),
-                new winston.transports.File({
-                    filename: path.join(logPath, 'full-' + label + '.log'),
-                    level: 'info',
-                    maxsize: 10 * 1024 * 1024,
-                    maxFiles: 5,
-                    tailable: true
-                }),
-                new winston.transports.File({
-                    filename: path.join(logPath, 'error-' + label + '.log'),
-                    level: 'error',
-                    maxsize: 10 * 1024 * 1024,
-                    maxFiles: 5,
-                    tailable: true
-                })
+                loggingWinston
             ],
             exitOnError: false
         };

@@ -10,7 +10,7 @@ const functions = {};
 
 functions.verifyBasic = function (basicData) {
     if (basicData) {
-        db.select({ col: '*', table: 'basic' }).then((res) => {
+        return db.select({ col: '*', table: 'basic' }).then((res) => {
             //eslint-disable-next-line camelcase
             basicData.show_referees = basicData.show_referees ? 1 : 0;
             //eslint-disable-next-line camelcase
@@ -52,7 +52,7 @@ functions.verifyBasic = function (basicData) {
 
 functions.verifyPhone = function (phoneData) {
     if (phoneData) {
-        db.select({ col: '*', table: 'phone' }).then((res) => {
+        return db.select({ col: '*', table: 'phone' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -111,7 +111,7 @@ functions.verifyPhone = function (phoneData) {
 
 functions.verifySocial = function (socialData) {
     if (socialData) {
-        db.select({ col: '*', table: 'social' }).then((res) => {
+        return db.select({ col: '*', table: 'social' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -170,7 +170,7 @@ functions.verifySocial = function (socialData) {
 
 functions.verifySkill = function (skillData) {
     if (skillData) {
-        db.select({ col: '*', table: 'skill' }).then((res) => {
+        return db.select({ col: '*', table: 'skill' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -229,7 +229,7 @@ functions.verifySkill = function (skillData) {
 
 functions.verifyTech = function (techData) {
     if (techData) {
-        db.select({ col: '*', table: 'technology' }).then((res) => {
+        return db.select({ col: '*', table: 'technology' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -291,7 +291,7 @@ functions.verifyTech = function (techData) {
 
 functions.verifyRepo = function (repoData) {
     if (repoData) {
-        db.select({ col: '*', table: 'repository' }).then((res) => {
+        return db.select({ col: '*', table: 'repository' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -350,7 +350,7 @@ functions.verifyRepo = function (repoData) {
 
 functions.verifyExperience = function (experienceData) {
     if (experienceData) {
-        db.select({ col: '*', table: 'experience' }).then((res) => {
+        return db.select({ col: '*', table: 'experience' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -414,7 +414,7 @@ functions.verifyExperience = function (experienceData) {
 
 functions.verifyEducation = function (educationData) {
     if (educationData) {
-        db.select({ col: '*', table: 'education' }).then((res) => {
+        return db.select({ col: '*', table: 'education' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -476,7 +476,7 @@ functions.verifyEducation = function (educationData) {
 
 functions.verifyPapers = function (paperData) {
     if (paperData) {
-        db.select({ col: '*', table: 'paper' }).then((res) => {
+        return db.select({ col: '*', table: 'paper' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -537,7 +537,7 @@ functions.verifyPapers = function (paperData) {
 
 functions.verifyAchievements = function (achievementData) {
     if (achievementData) {
-        db.select({ col: '*', table: 'achievement' }).then((res) => {
+        return db.select({ col: '*', table: 'achievement' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
@@ -597,7 +597,7 @@ functions.verifyAchievements = function (achievementData) {
 
 functions.verifyInterests = function (interestData) {
     if (interestData) {
-        db.select({ col: '*', table: 'interest' }).then((res) => {
+        return db.select({ col: '*', table: 'interest' }).then((res) => {
             let incorrectData = false;
 
             for (let r = 0; r < res.length; r++) {
