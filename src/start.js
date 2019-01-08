@@ -5,10 +5,10 @@ import { debug } from './config/config';
 import path from 'path';
 
 require('dotenv').config({ path: path.join(__dirname, '.env')});
-require('@google-cloud/debug-agent').start({
-    allowExpressions: true,
-    appPathRelativeToRepository: 'dist'
-});
+// require('@google-cloud/debug-agent').start({
+//     allowExpressions: true,
+//     appPathRelativeToRepository: 'dist'
+// });
 
 const logger = Logger.createLogger('worker');
 

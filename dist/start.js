@@ -14,12 +14,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 require('dotenv').config({
   path: _path.default.join(__dirname, '.env')
-});
+}); // require('@google-cloud/debug-agent').start({
+//     allowExpressions: true,
+//     appPathRelativeToRepository: 'dist'
+// });
 
-require('@google-cloud/debug-agent').start({
-  allowExpressions: true,
-  appPathRelativeToRepository: 'dist'
-});
 
 var logger = _logger.default.createLogger('worker');
 

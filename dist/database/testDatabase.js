@@ -24,7 +24,7 @@ functions.checkDatabase = function () {
     var migrationTableRegex = new RegExp('(.*)mysql_migrations(.*)');
 
     for (var i = 0; i < res.length; i++) {
-      var tableName = res[i]['Tables_in_digitalcv'];
+      var tableName = res[i]['Tables_in_thedashcoder_online_digitalcv'];
 
       if (!migrationTableRegex.test(tableName)) {
         var foundTable = false;
@@ -51,7 +51,7 @@ functions.checkDatabase = function () {
             var tableFound = false; //eslint-disable-next-line max-depth
 
             for (var n = 0; n < res.length; n++) {
-              var testingTable = res[n]['Tables_in_digitalcv']; //eslint-disable-next-line max-depth
+              var testingTable = res[n]['Tables_in_thedashcoder_online_digitalcv']; //eslint-disable-next-line max-depth
 
               if (tables[t] == testingTable) {
                 tableFound = true;
@@ -61,7 +61,7 @@ functions.checkDatabase = function () {
               if (n == res.length - 1) {
                 //eslint-disable-next-line max-depth
                 if (!tableFound) {
-                  missingTables.push(res[n]);
+                  missingTables.push(res[n]['Tables_in_thedashcoder_online_digitalcv']);
                 }
               }
             } //eslint-disable-next-line max-depth

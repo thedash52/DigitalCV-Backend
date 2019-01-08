@@ -29,7 +29,7 @@ functions.checkDatabase = function () {
         const migrationTableRegex = new RegExp('(.*)mysql_migrations(.*)');
 
         for (let i = 0; i < res.length; i++) {
-            const tableName = res[i]['Tables_in_digitalcv']
+            const tableName = res[i]['Tables_in_thedashcoder_online_digitalcv'];
 
             if (!migrationTableRegex.test(tableName)) {
                 let foundTable = false;
@@ -57,7 +57,7 @@ functions.checkDatabase = function () {
 
                         //eslint-disable-next-line max-depth
                         for (let n = 0; n < res.length; n++) {
-                            const testingTable = res[n]['Tables_in_digitalcv'];
+                            const testingTable = res[n]['Tables_in_thedashcoder_online_digitalcv'];
                             //eslint-disable-next-line max-depth
                             if (tables[t] == testingTable) {
                                 tableFound = true;
@@ -67,7 +67,7 @@ functions.checkDatabase = function () {
                             if (n == (res.length - 1)) {
                                 //eslint-disable-next-line max-depth
                                 if (!tableFound) {
-                                    missingTables.push(res[n]);
+                                    missingTables.push(res[n]['Tables_in_thedashcoder_online_digitalcv']);
                                 }
                             }
                         }
